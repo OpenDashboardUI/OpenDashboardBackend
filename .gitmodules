@@ -1,0 +1,6 @@
+[submodule "external/OpenDashboardIdl"]
+	path = external/OpenDashboardIdl
+	url = git@github.com:OpenDashboardUI/OpenDashboardIdl.git
+[submodule "external/svg_layer_extractor"]
+	path = external/svg_layer_extractor
+	url = git@github.com:twyleg/svg_layer_extractor.git

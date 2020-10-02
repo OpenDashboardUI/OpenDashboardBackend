@@ -1,0 +1,14 @@
+<RCC>
+	<qresource prefix="/">
+		<file>qml/Application.qml</file>
+		<file>qml/Svg.qml</file>
+		<file>qml/Sidebar.qml</file>
+		<file>qml/MapView.qml</file>
+		<file>qml/VideoChannel.qml</file>
+		<file>qml/FullscreenButton.qml</file>
+		<file>html/map.html</file>
+		<file>html/style.css</file>
+		<file>html/js/backend_connection.js</file>
+		<file>html/js/google_maps.js</file>
+	</qresource>
+</RCC>
