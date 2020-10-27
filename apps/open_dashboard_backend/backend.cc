@@ -1,4 +1,4 @@
-// Copyright (C) 2020 twyleg
+		// Copyright (C) 2020 twyleg
 #include "backend.h"
 
 #include <open_dashboard_common/config.h>
@@ -9,6 +9,7 @@
 #include <google/protobuf/text_format.h>
 
 #include <boost/program_options.hpp>
+#include <boost/algorithm/string.hpp>
 
 #include <iostream>
 #include <string>
@@ -40,6 +41,7 @@ CliArguments::CliArguments(int argc, char* argv[])
 		("hostname,h", po::value<std::string>(&mHostname)->default_value(CONFIG_DEFAULT_HOSTNAME), "Destination hostname")
 		("config,c", po::value<std::filesystem::path>(&mConfigFilePath)->required(), "Config")
 		("qml-file", po::value<std::filesystem::path>(&mMainQmlFilePath)->required(), "QML main file")
+		("sidebars-disabled", po::bool_switch(&mSidebarsDisabled), "Disable sidebars")
 	;
 
 	po::positional_options_description p;
@@ -48,7 +50,7 @@ CliArguments::CliArguments(int argc, char* argv[])
 	try {
 		po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
 		po::notify(vm);
-	} catch (const boost::wrapexcept<boost::program_options::required_option>& e) {
+	} catch (const boost::program_options::required_option& e) {
 		std::cout << "Missing required argument " << e.get_option_name() << std::endl;
 		std::cout << desc << std::endl;
 		std::exit(-1);
@@ -75,12 +77,16 @@ Backend::Backend(int argc, char* argv[], QObject* parent)
 	mArgv(argv),
 	cliArguments(mArgc, mArgv),
 	mApplication(mArgc, mArgv),
-	mUdpReceiver(cliArguments.mHostname, cliArguments.mPort)
+	mUdpReceiver(cliArguments.mHostname, cliArguments.mPort),
+	mUdpImuReceiver(cliArguments.mHostname, cliArguments.mPort+1)
 {;
 	cliArguments.ValidateRuntimeArguments();
 
-	mUdpReceiver.SetNonBlocking();
-	mUdpReceiver.EnableReuseAddr();
+//	mUdpReceiver.SetNonBlocking();
+//	mUdpReceiver.EnableReuseAddr();
+
+//	mUdpImuReceiver.SetNonBlocking();
+//	mUdpImuReceiver.EnableReuseAddr();
 }
 
 int Backend::Run()
@@ -88,26 +94,28 @@ int Backend::Run()
 	auto config = OpenDashboard::Common::Config::ReadConfig(cliArguments.mConfigFilePath);
 
 	const std::filesystem::path qApplicationPath = cliArguments.mMainQmlFilePath;
-	const std::filesystem::path qwd = qApplicationPath.parent_path();
+	const std::filesystem::path qwd = std::filesystem::absolute(qApplicationPath).parent_path();
 
 	QQmlApplicationEngine engine;
 	engine.addImportPath("qrc:/");
 
 	mControlDataStaticModel.SetVideoChannelOnePath(QString::fromStdString(
-			std::filesystem::absolute(config.mVideoData[0])));
+			std::filesystem::absolute(config.mVideoData[0]).generic_string()));
 	mControlDataStaticModel.SetVideoChannelTwoPath(QString::fromStdString(
-			std::filesystem::absolute(config.mVideoData[1])));
+			std::filesystem::absolute(config.mVideoData[1]).generic_string()));
 	mControlDataStaticModel.SetVideoChannelThreePath(QString::fromStdString(
-			std::filesystem::absolute(config.mVideoData[2])));
+			std::filesystem::absolute(config.mVideoData[2]).generic_string()));
+
+	mControlDataStaticModel.SetSidebarsDisabled(cliArguments.mSidebarsDisabled);
 
 	engine.rootContext()->setContextProperty("controlDataStaticModel", &mControlDataStaticModel);
 	engine.rootContext()->setContextProperty("controlDataDynamicModel", &mControlDataDynamicModel);
 	engine.rootContext()->setContextProperty("dataModel", &mVehicleDataModel);
 
 	engine.rootContext()->setContextProperty("qwd", QString::fromStdString(
-			"file:///" + std::filesystem::absolute(qwd).string()));
+			"file:///" + std::filesystem::absolute(qwd).generic_string()));
 	engine.rootContext()->setContextProperty("qApplication", QString::fromStdString(
-			"file:///" + std::filesystem::absolute(qApplicationPath).string()));
+			"file:///" + std::filesystem::absolute(qApplicationPath).generic_string()));
 	engine.load(QUrl(QStringLiteral("qrc:/qml/Application.qml")));
 
 	QTimer *timer = new QTimer(this);
@@ -119,13 +127,39 @@ int Backend::Run()
 
 void Backend::HandleTimer()
 {
+	while (true)
+	{
+		const size_t BUFFER_LEN = 2048;
+		char buffer[BUFFER_LEN];
+
+		if (!mUdpImuReceiver.DataAvailable())
+			break;
+		const size_t len = mUdpImuReceiver.Receive(buffer, BUFFER_LEN);
+
+		const std::string bufferString(buffer, len);
+		std::vector<std::string> strs;
+		boost::split(strs, bufferString, boost::is_any_of(","));
+
+		for (int i=0; i<strs.size(); ++i)
+		{
+			const std::string str = boost::algorithm::trim_copy(strs[i]);
+			if (str == "81")
+			{
+				const std::string angleString = boost::algorithm::trim_copy(strs[i+3]);
+				const double angle = boost::lexical_cast<double>(angleString);
+				mVehicleDataModel.SetInputSteeringWheelAngle(angle);
+				break;
+			}
+		}
+	}
 
 	while (true)
 	{
 		OpenDashboard::Common::InboundPacket packet;
-		ssize_t len = 0;
-		if ((len = mUdpReceiver.Receive(packet.GetData(), packet.GetBufferSize())) <= 0)
+
+		if (!mUdpReceiver.DataAvailable())
 			break;
+		const size_t len = mUdpReceiver.Receive(packet.GetData(), packet.GetBufferSize());
 
 		Control control;
 		VehicleDynamic vehicleDynamic;
@@ -188,6 +222,7 @@ void Backend::HandleTimer()
 				driverInput = packet.GetNextMessage<DriverInput>();
 				mVehicleDataModel.SetInputThrottle(driverInput.throttle());
 				mVehicleDataModel.SetInputBrake(driverInput.brake());
+				mVehicleDataModel.SetInputSteeringWheelAngle(driverInput.steering_wheel_angle());
 				break;
 			}
 			default:

@@ -31,6 +31,7 @@ class VehicleDataModel : public QObject
 
 	AddAttribute(double, inputThrottle, InputThrottle, 0.0);
 	AddAttribute(double, inputBrake, InputBrake, 0.0);
+	AddAttribute(double, inputSteeringWheelAngle, InputSteeringWheelAngle, 0.0);
 
 	AddAttribute(double, engineRpm, EngineRpm, 0.0);
 	AddAttribute(double, enginePowerOut, EnginePowerOut, 0.0);
@@ -53,6 +54,8 @@ class VehicleDataModel : public QObject
 class ControlDataStaticModel : public QObject
 {
 	Q_OBJECT
+
+	AddAttribute(bool, sidebarsDisabled, SidebarsDisabled, true);
 
 	AddAttribute(QString, videoChannelOnePath, VideoChannelOnePath, "");
 	AddAttribute(QString, videoChannelTwoPath, VideoChannelTwoPath, "");

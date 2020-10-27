@@ -6,6 +6,28 @@ OpenDashboard provides an Open-Source  framework for rapid prototyping of car da
 
 A dashboard project can be be splitted up into two main components, the **frontend** that contains the actual design and the **backend** that provides the data to be visualized. OpenDashboard provides a generic backend that can be hooked up to different frontends to provide them with dynamic vehicle data (velocity, accelerations, engine signals, gps positioning data, etc.). OpenDashboard can receive data via a network socket (GoogleProtobuf messages via UDP) and therefore is able to work with prerecorded data from file or live data from a simulation or a real vehicle bus.
 
+## Dependencies
+
+* [Qt](https://www.qt.io/) 
+* [Google Protocol Buffer (protobuf)](https://developers.google.com/protocol-buffers/) 
+* [Apache XercesC](https://xerces.apache.org/xerces-c/) 
+* [fmt](https://github.com/fmtlib/fmt) 
+* [googletest](https://github.com/google/googletest) 
+* [boost](https://www.boost.org/) 
+
+## Installation & Development
+
+OpenDashboard is available for the following environments:
+
+* GNU/Linux
+* Windows
+
+For detailed information about installation and setting up of a development environment, see the following documents:
+
+* Windows: **[doc/windows_guide.md](doc/windows_guide.md)**
+* TODO Linux: doc/linux_guide.md
+* TODO Linux Raspberry Pi: doc/linux_rpi_guide.md
+
 ## Usage
 
 OpenDashboard can be used in combination with different software. Every simulation or vehicle that offers an open interface (soft- or hardware) can be hooked onto the backend by using a harddisk recorder or gateway that can transform the application specific data into generic data that can be handled by OpenDashboard.

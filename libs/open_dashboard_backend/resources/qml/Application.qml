@@ -27,122 +27,130 @@ ApplicationWindow {
 		source: qApplication
 	}
 
-	FullscreenButton {
-		id: fullscreenButton
+	Item {
+		id: extraData
 
-		width: parent.height * 0.05
-		height: parent.height * 0.05
+		anchors.fill: parent
+		enabled: !controlDataStaticModel.sidebarsDisabled
+		visible: !controlDataStaticModel.sidebarsDisabled
 
-		anchors.top: parent.top
-		anchors.horizontalCenter: parent.horizontalCenter
+		FullscreenButton {
+			id: fullscreenButton
 
-		onClicked: {
-			if (root.visibility == Window.Windowed){
-				root.visibility = Window.FullScreen
-			} else {
-				root.visibility = Window.Windowed
-			}
-		}
-	}
+			width: parent.height * 0.05
+			height: parent.height * 0.05
 
-	Sidebar  {
-		id: sidebarLeft
+			anchors.top: parent.top
+			anchors.horizontalCenter: parent.horizontalCenter
 
-		layout: Sidebar.Layout.LEFT
-		widthRelative: 0.09
-
-		Column {
-
-			width: parent.width * 0.9
-			height: parent.height * 0.9
-			anchors.centerIn: parent
-			spacing: 20
-
-			TextMetrics {
-				id: metrics
-				font.family: "Arial"
-				elideWidth: 300
-				elide: Text.ElideRight
-				text: controlDataDynamicModel.serializedData
-			}
-
-			Text {
-				id: serializedData
-				color: "white"
-				text: controlDataDynamicModel.serializedData
-				width: parent.width
-				height: parent.height
-				wrapMode: Text.WrapAnywhere
-			}
-		}
-	}
-
-	Sidebar  {
-		id: sidebarRight
-
-		layout: Sidebar.Layout.RIGHT
-		widthRelative: 0.15
-
-		Column {
-
-			width: parent.width * 0.9
-			height: parent.height * 0.9
-			anchors.centerIn: parent
-			spacing: 20
-
-			property int currentState: controlDataDynamicModel.state
-
-			onCurrentStateChanged: {
-
-				switch (currentState)
-				{
-				case 0:
-				case 2:
-					videoChannel0.seek(0);
-					videoChannel0.stop();
-					videoChannel1.seek(0);
-					videoChannel1.stop();
-					videoChannel2.seek(0);
-					videoChannel2.stop();
-					break;
-				case 1:
-					videoChannel0.play();
-					videoChannel1.play();
-					videoChannel2.play();
-					break;
+			onClicked: {
+				if (root.visibility == Window.Windowed){
+					root.visibility = Window.FullScreen
+				} else {
+					root.visibility = Window.Windowed
 				}
 			}
+		}
 
+		Sidebar  {
+			id: sidebarLeft
 
-			VideoChannel {
-				id: videoChannel0
+			layout: Sidebar.Layout.LEFT
+			widthRelative: 0.09
 
-				autoPlay: false
-				width: parent.width
-				source: "file:" + controlDataStaticModel.videoChannelOnePath
+			Column {
+
+				width: parent.width * 0.9
+				height: parent.height * 0.9
+				anchors.centerIn: parent
+				spacing: 20
+
+				TextMetrics {
+					id: metrics
+					font.family: "Arial"
+					elideWidth: 300
+					elide: Text.ElideRight
+					text: controlDataDynamicModel.serializedData
+				}
+
+				Text {
+					id: serializedData
+					color: "white"
+					text: controlDataDynamicModel.serializedData
+					width: parent.width
+					height: parent.height
+					wrapMode: Text.WrapAnywhere
+				}
 			}
+		}
 
-			VideoChannel {
-				id: videoChannel1
+		Sidebar  {
+			id: sidebarRight
 
-				autoPlay: false
-				width: parent.width
-				source: "file:" + controlDataStaticModel.videoChannelTwoPath
-			}
+			layout: Sidebar.Layout.RIGHT
+			widthRelative: 0.15
 
-			VideoChannel {
-				id: videoChannel2
+			Column {
 
-				autoPlay: false
-				width: parent.width
-				source: "file:" + controlDataStaticModel.videoChannelThreePath
-			}
+				width: parent.width * 0.9
+				height: parent.height * 0.9
+				anchors.centerIn: parent
+				spacing: 20
 
-			MapView {
-				id: mapView
+				property int currentState: controlDataDynamicModel.state
 
-				width: parent.width
-				height: width
+				onCurrentStateChanged: {
+
+					switch (currentState)
+					{
+					case 0:
+					case 2:
+						videoChannel0.seek(0);
+						videoChannel0.stop();
+						videoChannel1.seek(0);
+						videoChannel1.stop();
+						videoChannel2.seek(0);
+						videoChannel2.stop();
+						break;
+					case 1:
+						videoChannel0.play();
+						videoChannel1.play();
+						videoChannel2.play();
+						break;
+					}
+				}
+
+
+				VideoChannel {
+					id: videoChannel0
+
+					autoPlay: false
+					width: parent.width
+					source: "file:" + controlDataStaticModel.videoChannelOnePath
+				}
+
+				VideoChannel {
+					id: videoChannel1
+
+					autoPlay: false
+					width: parent.width
+					source: "file:" + controlDataStaticModel.videoChannelTwoPath
+				}
+
+				VideoChannel {
+					id: videoChannel2
+
+					autoPlay: false
+					width: parent.width
+					source: "file:" + controlDataStaticModel.videoChannelThreePath
+				}
+
+				MapView {
+					id: mapView
+
+					width: parent.width
+					height: width
+				}
 			}
 		}
 	}

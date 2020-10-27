@@ -13,6 +13,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 find_package(Qt5 COMPONENTS Core Widgets Qml Quick Location REQUIRED)
 find_package(XercesC REQUIRED)
 find_package(fmt REQUIRED)
+find_path(BOOST_ASIO_INCLUDE_DIRS "boost/asio.hpp")
 
 
 #
@@ -41,4 +42,5 @@ target_link_libraries(${TARGET_NAME}
 
 target_include_directories(${TARGET_NAME}
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/..
+	${BOOST_ASIO_INCLUDE_DIRS}
 )

@@ -1,4 +1,7 @@
 // Copyright (C) 2020 twyleg
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include <open_dashboard_common/csv_reader.h>
 #include <open_dashboard_common/udp_transceiver.h>
 #include <open_dashboard_common/packet.h>
@@ -45,8 +48,8 @@ struct CliArguments
 		po::options_description desc("Available options:");
 		desc.add_options()
 			("help", "Print help message.")
-			("port,p", po::value<int>(&mPort)->default_value(CONFIG_DEFAULT_PORT), "Listen port")
-			("hostname,h", po::value<std::string>(&mHostname)->default_value(CONFIG_DEFAULT_HOSTNAME), "Listen hostname")
+			("port,p", po::value<int>(&mPort)->default_value(CONFIG_DEFAULT_PORT), "Remote port")
+			("hostname,h", po::value<std::string>(&mHostname)->default_value(CONFIG_DEFAULT_HOSTNAME), "Remote hostname")
 			("config,c", po::value<std::filesystem::path>(&mConfigFilePath)->required(), "Config file")
 		;
 
@@ -124,7 +127,7 @@ int main(int argc, char* argv[])
 		DriverInput driverInput;
 		driverInput.set_throttle(csvReader.GetValue<double>("VC.Gas"));
 		driverInput.set_brake(csvReader.GetValue<double>("VC.Brake"));
-		driverInput.set_steering_wheel_angle(csvReader.GetValue<double>("VC.Steer.Ang"));
+		driverInput.set_steering_wheel_angle(csvReader.GetValue<double>("VC.Steer.Ang") * (180.0 / M_PI));
 		packet.AddMessage(DRIVER_INPUT_MSG, driverInput);
 		std::cout << driverInput << std::endl;
 

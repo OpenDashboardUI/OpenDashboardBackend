@@ -23,6 +23,8 @@ struct CliArguments
 	int mPort;
 	std::filesystem::path mConfigFilePath;
 	std::filesystem::path mMainQmlFilePath;
+
+	bool mSidebarsDisabled;
 };
 
 
@@ -41,6 +43,7 @@ public:
 	CliArguments cliArguments;
 	QGuiApplication mApplication;
 	OpenDashboard::Common::UdpReceiver mUdpReceiver;
+	OpenDashboard::Common::UdpReceiver mUdpImuReceiver;
 
 	ControlDataStaticModel mControlDataStaticModel;
 	ControlDataDynamicModel mControlDataDynamicModel;

@@ -18,6 +18,19 @@ find_package(Boost COMPONENTS REQUIRED program_options system)
 
 
 #
+# Setup WinDeployQt to create a deployable package for windows
+#
+win_deploy_qt(
+	TARGET
+		${TARGET_NAME}
+	QML_DIR
+		"${CMAKE_SOURCE_DIR}/libs/open_dashboard_backend/resources/qml"
+	DEPLOY_DIRECTORY_NAME
+		"OpenDashboardBackend_win_x64"
+)
+
+
+#
 # add source files to target
 #
 add_executable(${TARGET_NAME}

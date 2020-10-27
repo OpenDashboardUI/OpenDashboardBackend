@@ -184,7 +184,7 @@ private:
 				 xmlFilePath.string());
 		try
 		{
-			mConfigFileParser.parse(xmlFilePath.c_str());
+			mConfigFileParser.parse(xmlFilePath.generic_string().c_str());
 		}
 		catch (const xercesc::SAXParseException& exc)
 		{

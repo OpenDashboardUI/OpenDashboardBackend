@@ -3,15 +3,8 @@
 
 #include "helper.h"
 
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <errno.h>
-#include <string.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
+#include <boost/asio.hpp>
+#include <string>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,14 +38,12 @@ public:
 		const std::string mMessage;
 	};
 
-	virtual ~UdpSocket();
+	virtual ~UdpSocket() = default;
+
+	size_t DataAvailable();
 
 	void EnableReuseAddr();
-	void EnableMulticast();
-	void SetTtlLimit(const char ttlLimit);
-
 	void SetNonBlocking();
-	void EnableLoopback(bool loopbackEnabled);
 
 protected:
 
@@ -60,9 +51,11 @@ protected:
 
 	const std::string mHostname;
 	const int mPort;
-	const int mSockfd;
 
-	struct sockaddr_in mSockAddr;
+	boost::asio::ip::basic_endpoint<boost::asio::ip::udp> mUdpEndpoint;
+
+	boost::asio::io_service mService;
+	boost::asio::ip::udp::socket mSocket;
 };
 
 class UdpTransmitter : public UdpSocket
@@ -70,9 +63,8 @@ class UdpTransmitter : public UdpSocket
 public:
 
 	UdpTransmitter(const std::string& hostname, int port);
-	~UdpTransmitter();
 
-	ssize_t Transmit(const char* data, const size_t size);
+	size_t Transmit(const char* data, const size_t);
 };
 
 
@@ -81,9 +73,8 @@ class UdpReceiver : public UdpSocket
 public:
 
 	UdpReceiver(const std::string& hostname, int port);
-	~UdpReceiver();
 
-	ssize_t Receive(char* data, const size_t size);
+	size_t Receive(char* data, const size_t);
 };
 
 }

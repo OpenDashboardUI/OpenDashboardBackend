@@ -4,6 +4,5 @@
 #include <exception>
 #include <fmt/format.h>
 
-#define FORMAT(msg...) fmt::format(msg)
-
-#define THROW_IF(expr, msg...) if (expr) throw std::runtime_error(fmt::format(msg))
+#define FORMAT(...) fmt::format(__VA_ARGS__)
+#define THROW_IF(expr, ...) if (expr) throw std::runtime_error(fmt::format(__VA_ARGS__))
