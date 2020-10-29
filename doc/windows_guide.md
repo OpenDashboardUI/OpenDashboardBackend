@@ -17,7 +17,7 @@ Note: Make sure the CMake directory (e.g. **C:\Program Files\CMake\bin**) is add
 
 #### MSVC
 
-Download and install [Visual Studio Community Edition](https://visualstudio.microsoft.com/) (tested with 2019). This will provide you with the MSVC++ compiler.
+Download and install [Visual Studio Community Edition](https://visualstudio.microsoft.com/) (tested with 2019). On Installation choose **Desktop development with C++** This will provide you with the MSVC++ compiler.
 
 #### vcpkg
 
@@ -56,19 +56,20 @@ Note: Make sure that the Qt5 binary dir for MSVC (e.g. **C:\Qt\5.15.1\msvc2019_6
 
 Get the source code:
 
-	git clone git@github.com:OpenDashboardUI/OpenDashboardBackend.git
-	cd OpenDashboardBackend
+	git clone git@github.com:OpenDashboardUI/OpenDashboardBackend.git OpenDashboardBackend_source
+	cd OpenDashboardBackend_source
 	git submodule init
 	git submodule update
 
 Create a build directory:
 
+	cd ..\
 	mkdir OpenDashboardBackend_build_msvc2019
 	cd OpenDashboardBackend_build_msvc2019
 
 Generate build environment with CMake:
 
-	 cmake -G "Visual Studio 16 2019" -DCMAKE_TOOLCHAIN_FILE=PATH_TO_VCPKG\vcpkg\scripts\buildsystems\vcpkg.cmake ..\OpenDashboardBackend
+	 cmake -G "Visual Studio 16 2019" -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake ..\OpenDashboardBackend_source
 	 
 Invoke the build process by the following command or by using the solution file with Visual Studio:
 
