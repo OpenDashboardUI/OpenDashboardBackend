@@ -3,50 +3,44 @@ import QtQuick 2.0
 
 Rectangle {
 
-	id: sidebar
+	id: topbar
 
-	enum Layout {
-		LEFT,
-		RIGHT
-	}
-
-	property bool sidebarVisible: false
+	property bool topbarVisible: false
 	property real widthRelative: 0.2
+	property real heightRelative: 0.2
 	property int animationDuration: 500
-	property int offsetX: 0
-	property int layout: Sidebar.Layout.LEFT
+	property int offsetY: 0
 
 	width: parent.width * widthRelative
-	height: parent.height
+	height: parent.height * heightRelative
 
-	x: layout === Sidebar.Layout.LEFT ? -width + offsetX: parent.width - offsetX
-	y: 0
+	x: parent.width/2 - width/2
+	y: -height - offsetY
 
 	color: "#161618"
 	radius: parent.height * 0.03
 	border.width: 0
 
 	PropertyAnimation {
-		id: sidebarAnimation
-		target: sidebar
-		property: "offsetX"
+		id: topbarAnimation
+		target: topbar
+		property: "offsetY"
 		to: 0
 		easing.type: Easing.InOutQuint
 		duration: animationDuration
-		onStopped: sidebarVisible = !sidebarVisible
+		onStopped: topbarVisible = !topbarVisible
 	}
 
 	Item {
 		id: button
 
 		z: -1
-		anchors.left: layout === Sidebar.Layout.LEFT ? parent.right : undefined
-		anchors.right: layout === Sidebar.Layout.LEFT ?  undefined : parent.left
-		anchors.verticalCenter: parent.verticalCenter
+		anchors.top: parent.bottom
+		anchors.horizontalCenter: parent.horizontalCenter
 
-		width: parent.height * 0.05
+		width: parent.height * 0.4
 		height: width
-		rotation: layout === Sidebar.Layout.LEFT ? 0 : 180
+		rotation: 90
 
 		Svg {
 			source: "qrc:/svg-multilayer-extracted/sidebar_button_background.svg"
@@ -65,7 +59,7 @@ Rectangle {
 				PropertyAnimation on angle {
 					running: false
 					id: buttonIconAnimation
-					to: sidebarVisible ? 0 : 180
+					to: topbarVisible ? 0 : 180
 					easing.type: Easing.InOutQuint
 					duration: animationDuration
 				}
@@ -93,17 +87,17 @@ Rectangle {
 
 		MouseArea {
 			anchors.fill: parent
-			onClicked: sidebar.toggle()
+			onClicked: topbar.toggle()
 		}
 	}
 
 	function toggle(){
-		if (sidebarVisible){
-			sidebarAnimation.to = 0;
+		if (topbarVisible){
+			topbarAnimation.to = 0;
 		} else {
-			sidebarAnimation.to = sidebar.width;
+			topbarAnimation.to = -topbar.height;
 		}
-		sidebarAnimation.start();
+		topbarAnimation.start();
 		buttonIconAnimation.start();
 	}
 }

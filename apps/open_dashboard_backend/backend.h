@@ -13,6 +13,7 @@
 #include <QTimer>
 
 #include <filesystem>
+#include <optional>
 
 struct CliArguments
 {
@@ -21,8 +22,8 @@ struct CliArguments
 
 	std::string mHostname;
 	int mPort;
-	std::filesystem::path mConfigFilePath;
-	std::filesystem::path mMainQmlFilePath;
+	std::optional<std::filesystem::path> mConfigFilePath;
+	std::optional<std::filesystem::path> mMainQmlFilePath;
 
 	bool mSidebarsDisabled;
 };
@@ -35,23 +36,41 @@ class Backend : public QObject
 public:
 
 	Backend(int argc, char* argv[], QObject* parent = nullptr);
+	~Backend();
 	int Run();
 
 	int mArgc;
 	char** mArgv;
 
 	CliArguments cliArguments;
-	QGuiApplication mApplication;
-	OpenDashboard::Common::UdpReceiver mUdpReceiver;
-	OpenDashboard::Common::UdpReceiver mUdpImuReceiver;
 
 	ControlDataStaticModel mControlDataStaticModel;
 	ControlDataDynamicModel mControlDataDynamicModel;
 	VehicleDataModel mVehicleDataModel;
 
+	QGuiApplication mApplication;
+	QQmlApplicationEngine mEngine;
+	QTimer mReceiveTimer;
+
+	OpenDashboard::Common::UdpReceiver mUdpReceiver;
+	OpenDashboard::Common::UdpReceiver mUdpImuReceiver;
+
+private:
+
+	void LoadStartscreen();
+	void LoadFrontend(const QUrl& frontendMainFileUrl);
+	void ReloadFrontend();
+
 public slots:
 
-	void HandleTimer();
+	void handleTimer();
+	void handleOpenFileRequest(const QUrl& filepath);
+	void handleReloadRequest();
+
+signals:
+
+	void unloadFrontendRequest();
+	void loadFrontendRequest();
 
 };
 

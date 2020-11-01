@@ -38,7 +38,7 @@ Item {
 		id: webview
 
 		anchors.fill: parent
-		url: "qrc:/html/map.html"
+		url: "qrc:/maps/map.html"
 		webChannel: channel
 	}
 }

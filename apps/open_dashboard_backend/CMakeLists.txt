@@ -40,6 +40,11 @@ add_executable(${TARGET_NAME}
 )
 
 
+#if(MSVC)
+#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+#	set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 17)
+#endif(MSVC)
+
 #
 # link against libs
 #

@@ -39,8 +39,8 @@ CliArguments::CliArguments(int argc, char* argv[])
 		("help", "Print help message.")
 		("port,p", po::value<int>(&mPort)->default_value(CONFIG_DEFAULT_PORT), "Destination port")
 		("hostname,h", po::value<std::string>(&mHostname)->default_value(CONFIG_DEFAULT_HOSTNAME), "Destination hostname")
-		("config,c", po::value<std::filesystem::path>(&mConfigFilePath)->required(), "Config")
-		("qml-file", po::value<std::filesystem::path>(&mMainQmlFilePath)->required(), "QML main file")
+		("config,c", po::value<std::filesystem::path>(), "Config")
+		("qml-file", po::value<std::filesystem::path>(), "QML main file")
 		("sidebars-disabled", po::bool_switch(&mSidebarsDisabled), "Disable sidebars")
 	;
 
@@ -56,6 +56,12 @@ CliArguments::CliArguments(int argc, char* argv[])
 		std::exit(-1);
 	}
 
+	if (!vm["config"].empty())
+		mConfigFilePath.emplace(vm["config"].as<std::filesystem::path>());
+
+	if (!vm["qml-file"].empty())
+		mMainQmlFilePath.emplace(vm["qml-file"].as<std::filesystem::path>());
+
 	if (vm.count("help")) {
 		std::cout << desc << std::endl;
 		std::exit(0);
@@ -64,11 +70,17 @@ CliArguments::CliArguments(int argc, char* argv[])
 
 void CliArguments::ValidateRuntimeArguments()
 {
-	THROW_IF(!std::filesystem::is_regular_file(mConfigFilePath), "Config file does not exist: {}", mConfigFilePath.string());
-	THROW_IF(mConfigFilePath.extension() != ".xml", "Config file does not have \".xml\" extension: {}", mConfigFilePath.string());
+	if (mConfigFilePath)
+	{
+		THROW_IF(!std::filesystem::is_regular_file(*mConfigFilePath), "Config file does not exist: {}", mConfigFilePath->string());
+		THROW_IF(mConfigFilePath->extension() != ".xml", "Config file does not have \".xml\" extension: {}", mConfigFilePath->string());
+	}
 
-	THROW_IF(!std::filesystem::is_regular_file(mMainQmlFilePath), "Qml file does not exist: {}", mMainQmlFilePath.string());
-	THROW_IF(mMainQmlFilePath.extension() != ".qml", "Qml file does not have \".qml\" extension: {}", mMainQmlFilePath.string());
+	if (mMainQmlFilePath)
+	{
+		THROW_IF(!std::filesystem::is_regular_file(*mMainQmlFilePath), "Qml file does not exist: {}", mMainQmlFilePath->string());
+		THROW_IF(mMainQmlFilePath->extension() != ".qml", "Qml file does not have \".qml\" extension: {}", mMainQmlFilePath->string());
+	}
 }
 
 Backend::Backend(int argc, char* argv[], QObject* parent)
@@ -77,55 +89,104 @@ Backend::Backend(int argc, char* argv[], QObject* parent)
 	mArgv(argv),
 	cliArguments(mArgc, mArgv),
 	mApplication(mArgc, mArgv),
+	mReceiveTimer(this),
 	mUdpReceiver(cliArguments.mHostname, cliArguments.mPort),
 	mUdpImuReceiver(cliArguments.mHostname, cliArguments.mPort+1)
-{;
+{
 	cliArguments.ValidateRuntimeArguments();
+}
 
-//	mUdpReceiver.SetNonBlocking();
-//	mUdpReceiver.EnableReuseAddr();
-
-//	mUdpImuReceiver.SetNonBlocking();
-//	mUdpImuReceiver.EnableReuseAddr();
+Backend::~Backend()
+{
+	emit(unloadFrontendRequest());
 }
 
 int Backend::Run()
 {
-	auto config = OpenDashboard::Common::Config::ReadConfig(cliArguments.mConfigFilePath);
-
-	const std::filesystem::path qApplicationPath = cliArguments.mMainQmlFilePath;
-	const std::filesystem::path qwd = std::filesystem::absolute(qApplicationPath).parent_path();
-
-	QQmlApplicationEngine engine;
-	engine.addImportPath("qrc:/");
-
-	mControlDataStaticModel.SetVideoChannelOnePath(QString::fromStdString(
-			std::filesystem::absolute(config.mVideoData[0]).generic_string()));
-	mControlDataStaticModel.SetVideoChannelTwoPath(QString::fromStdString(
-			std::filesystem::absolute(config.mVideoData[1]).generic_string()));
-	mControlDataStaticModel.SetVideoChannelThreePath(QString::fromStdString(
-			std::filesystem::absolute(config.mVideoData[2]).generic_string()));
+	mApplication.setOrganizationName("OpenDashboardBackend");
+	mApplication.setOrganizationDomain("OpenDashboardBackend");
 
 	mControlDataStaticModel.SetSidebarsDisabled(cliArguments.mSidebarsDisabled);
 
-	engine.rootContext()->setContextProperty("controlDataStaticModel", &mControlDataStaticModel);
-	engine.rootContext()->setContextProperty("controlDataDynamicModel", &mControlDataDynamicModel);
-	engine.rootContext()->setContextProperty("dataModel", &mVehicleDataModel);
+	if (cliArguments.mConfigFilePath)
+	{
+		auto config = OpenDashboard::Common::Config::ReadConfig(*cliArguments.mConfigFilePath);
 
-	engine.rootContext()->setContextProperty("qwd", QString::fromStdString(
-			"file:///" + std::filesystem::absolute(qwd).generic_string()));
-	engine.rootContext()->setContextProperty("qApplication", QString::fromStdString(
-			"file:///" + std::filesystem::absolute(qApplicationPath).generic_string()));
-	engine.load(QUrl(QStringLiteral("qrc:/qml/Application.qml")));
+		mControlDataStaticModel.SetVideoChannelOnePath(QString::fromStdString(
+				std::filesystem::absolute(config.mVideoData[0]).generic_string()));
+		mControlDataStaticModel.SetVideoChannelTwoPath(QString::fromStdString(
+				std::filesystem::absolute(config.mVideoData[1]).generic_string()));
+		mControlDataStaticModel.SetVideoChannelThreePath(QString::fromStdString(
+				std::filesystem::absolute(config.mVideoData[2]).generic_string()));
+	}
 
-	QTimer *timer = new QTimer(this);
-	QObject::connect(timer,SIGNAL(timeout()), this, SLOT(HandleTimer()));
-	timer->start(10);
+	mEngine.addImportPath("qrc:/");
+	mEngine.rootContext()->setContextProperty("controlDataStaticModel", &mControlDataStaticModel);
+	mEngine.rootContext()->setContextProperty("controlDataDynamicModel", &mControlDataDynamicModel);
+	mEngine.rootContext()->setContextProperty("dataModel", &mVehicleDataModel);
+	mEngine.rootContext()->setContextProperty("backend", this);
+	mEngine.load(QUrl(QStringLiteral("qrc:/qml/Application.qml")));
+
+	if (cliArguments.mMainQmlFilePath)
+		LoadFrontend(QUrl::fromLocalFile(QString::fromStdString(cliArguments.mMainQmlFilePath->generic_string())));
+	else
+		LoadStartscreen();
+
+	QObject::connect(&mReceiveTimer,SIGNAL(timeout()), this, SLOT(handleTimer()));
+	mReceiveTimer.start(10);
 
 	return mApplication.exec();
 }
 
-void Backend::HandleTimer()
+void Backend::handleOpenFileRequest(const QUrl& filepath)
+{
+	LoadFrontend(filepath);
+}
+
+void Backend::handleReloadRequest()
+{
+	ReloadFrontend();
+}
+
+void Backend::LoadStartscreen()
+{
+	const QUrl qApplicationPathUrl("qrc:/qml/LogoStartscreen.qml");
+
+	QVector<QQmlContext::PropertyPair> newProperties = {
+		{ QString("qApplication"), qApplicationPathUrl }
+	};
+
+	mEngine.rootContext()->setContextProperties(newProperties);
+	emit(loadFrontendRequest());
+}
+
+void Backend::LoadFrontend(const QUrl& frontendMainFileUrl)
+{
+	const std::filesystem::path qApplicationPath = frontendMainFileUrl.toLocalFile().toStdString();
+	const std::filesystem::path qwd = std::filesystem::absolute(qApplicationPath).parent_path();
+
+	const QUrl qApplicationPathUrl = QUrl::fromLocalFile(QString::fromStdString(std::filesystem::absolute(qApplicationPath).generic_string()));
+	const QUrl qwdUrl = QUrl::fromLocalFile(QString::fromStdString(std::filesystem::absolute(qwd).generic_string()));
+
+	QVector<QQmlContext::PropertyPair> newProperties = {
+		{ QString("qApplication"), qApplicationPathUrl },
+		{ QString("qwd"), qwdUrl }
+	};
+
+	emit(unloadFrontendRequest());
+	mEngine.rootContext()->setContextProperties(newProperties);
+	emit(loadFrontendRequest());
+}
+
+void Backend::ReloadFrontend()
+{
+	emit(unloadFrontendRequest());
+	// This is neccesary to force a reload of the file from disk
+	mEngine.clearComponentCache();
+	emit(loadFrontendRequest());
+}
+
+void Backend::handleTimer()
 {
 	while (true)
 	{

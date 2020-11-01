@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
 {
 	Q_INIT_RESOURCE(application);
 	Q_INIT_RESOURCE(svg_multilayer_extracted);
+	Q_INIT_RESOURCE(map);
 
 	std::cout << "Started open_dashboard_backend" << std::endl;
 

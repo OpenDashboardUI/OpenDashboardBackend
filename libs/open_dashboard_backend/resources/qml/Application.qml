@@ -5,13 +5,14 @@ import QtQuick.Window 2.1
 import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Extras 1.4
+import QtQuick.Dialogs 1.0
 
 import QtMultimedia 5.15
 import QtPositioning 5.5
 import QtLocation 5.6
 
 ApplicationWindow {
-	id: root
+	id: applicationWindow
 
 	visible: true
 	color: "black"
@@ -21,10 +22,77 @@ ApplicationWindow {
 	height: 1080
 
 	Loader {
-		id: myLoader
+		id: frontendLoader
 
-		anchors.fill: parent
-		source: qApplication
+		anchors.centerIn: parent
+
+		property int nativeWidth: 0
+		property int nativeHeight: 0
+		property real zoom: 1.0
+
+		Connections{
+			target: backend
+
+			function onUnloadFrontendRequest() {
+				frontendLoader.unloadFrontend()
+			}
+
+			function onLoadFrontendRequest() {
+				frontendLoader.loadFrontend()
+			}
+		}
+
+		onLoaded: {
+			nativeWidth = item.width
+			nativeHeight = item.height
+
+			if (item.color !== undefined)
+				applicationWindow.color = item.color
+
+			// This is only relevant for the LogoStartscreen to open the file open dialog on click
+			if (item.clicked !== undefined)
+				item.clicked.connect(openFileDialog)
+		}
+
+		onZoomChanged: {
+			item.width = nativeWidth * zoom
+			item.height = nativeHeight * zoom
+		}
+
+		function zoomIn() {
+			zoom += 0.05
+		}
+
+		function zoomOut() {
+			zoom -= 0.05
+		}
+
+		function loadFrontend() {
+			frontendLoader.source = qApplication
+		}
+
+		function unloadFrontend() {
+			frontendLoader.sourceComponent = undefined
+		}
+
+		function openFileDialog() {
+			fileDialog.visible = true
+		}
+	}
+
+	FileDialog {
+		id: fileDialog
+		title: "Please choose a QML file"
+		folder: shortcuts.home
+		nameFilters: [ "QML file (*.qml)" ]
+		visible: false
+		onAccepted: {
+			backend.handleOpenFileRequest(fileDialog.fileUrl)
+			visible = false
+		}
+		onRejected: {
+			visible = false
+		}
 	}
 
 	Item {
@@ -34,20 +102,57 @@ ApplicationWindow {
 		enabled: !controlDataStaticModel.sidebarsDisabled
 		visible: !controlDataStaticModel.sidebarsDisabled
 
-		FullscreenButton {
-			id: fullscreenButton
+		Topbar {
+			id: topbar
 
-			width: parent.height * 0.05
-			height: parent.height * 0.05
+			widthRelative: 0.5
+			heightRelative: 0.1
 
-			anchors.top: parent.top
-			anchors.horizontalCenter: parent.horizontalCenter
+			Row {
 
-			onClicked: {
-				if (root.visibility == Window.Windowed){
-					root.visibility = Window.FullScreen
-				} else {
-					root.visibility = Window.Windowed
+				height: parent.height
+				anchors.centerIn: parent
+				spacing: 20
+
+				SquareButton {
+					size: parent.height * 0.8
+					anchors.verticalCenter: parent.verticalCenter
+					source: "qrc:/svg-multilayer-extracted/buttons_open.svg"
+					onClicked: frontendLoader.openFileDialog()
+				}
+
+				SquareButton {
+					size: parent.height * 0.8
+					anchors.verticalCenter: parent.verticalCenter
+					source: "qrc:/svg-multilayer-extracted/buttons_reload.svg"
+					onClicked: backend.handleReloadRequest()
+				}
+
+				SquareButton {
+					size: parent.height * 0.8
+					anchors.verticalCenter: parent.verticalCenter
+					source: "qrc:/svg-multilayer-extracted/buttons_fullscreen.svg"
+					onClicked: {
+						if (applicationWindow.visibility == Window.Windowed){
+							applicationWindow.visibility = Window.FullScreen
+						} else {
+							applicationWindow.visibility = Window.Windowed
+						}
+					}
+				}
+
+				SquareButton {
+					size: parent.height * 0.8
+					anchors.verticalCenter: parent.verticalCenter
+					source: "qrc:/svg-multilayer-extracted/buttons_zoom_plus.svg"
+					onClicked: frontendLoader.zoomIn()
+				}
+
+				SquareButton {
+					size: parent.height * 0.8
+					anchors.verticalCenter: parent.verticalCenter
+					source: "qrc:/svg-multilayer-extracted/buttons_zoom_minus.svg"
+					onClicked: frontendLoader.zoomOut()
 				}
 			}
 		}
@@ -65,14 +170,6 @@ ApplicationWindow {
 				anchors.centerIn: parent
 				spacing: 20
 
-				TextMetrics {
-					id: metrics
-					font.family: "Arial"
-					elideWidth: 300
-					elide: Text.ElideRight
-					text: controlDataDynamicModel.serializedData
-				}
-
 				Text {
 					id: serializedData
 					color: "white"
@@ -80,6 +177,7 @@ ApplicationWindow {
 					width: parent.width
 					height: parent.height
 					wrapMode: Text.WrapAnywhere
+					elide: Text.ElideRight
 				}
 			}
 		}

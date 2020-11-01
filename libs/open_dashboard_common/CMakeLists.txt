@@ -6,11 +6,15 @@ set(TARGET_NAME open_dashboard_common_lib)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+#if(MSVC)
+#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+#endif(MSVC)
+
 
 #
 # find packages
 #
-find_package(Qt5 COMPONENTS Core Widgets Qml Quick Location REQUIRED)
+find_package(Qt5 COMPONENTS Core Qml Quick Location REQUIRED)
 find_package(XercesC REQUIRED)
 find_package(fmt REQUIRED)
 find_path(BOOST_ASIO_INCLUDE_DIRS "boost/asio.hpp")

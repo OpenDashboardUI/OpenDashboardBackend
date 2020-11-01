@@ -23,7 +23,9 @@ Download and install [Visual Studio Community Edition](https://visualstudio.micr
 
 For comfortable dependency management you can use **vcpkg**. You can find an installation instruction [here](https://docs.microsoft.com/en-us/cpp/build/vcpkg?view=vs-2019).
 
-After the installation you can build all dependencies that are needed by OpenDashboard by executing the **scripts/build_vcpkg_dependencies.bat** script.
+After the installation you can build all dependencies that are needed by OpenDashboard by executing the following script:
+
+	scripts/build_vcpkg_dependencies.bat
 
 Note: Make sure the vcpkg directory (e.g. **C:\vcpkg**) is added to your **PATH** variable.
 
@@ -67,9 +69,9 @@ Create a build directory:
 	mkdir OpenDashboardBackend_build_msvc2019
 	cd OpenDashboardBackend_build_msvc2019
 
-Generate build environment with CMake:
+Generate build environment with CMake (the **-DGOOGLE_MAPS_KEY_API=api_key** argument is optional to enable the maps view based on Google Maps data) :
 
-	 cmake -G "Visual Studio 16 2019" -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake ..\OpenDashboardBackend_source
+	 cmake -G "Visual Studio 16 2019" -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake ..\OpenDashboardBackend_source -DGOOGLE_MAPS_API_KEY=api_key
 	 
 Invoke the build process by the following command or by using the solution file with Visual Studio:
 

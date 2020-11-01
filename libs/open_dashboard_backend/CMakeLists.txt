@@ -9,19 +9,35 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
+#if(MSVC)
+#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
+#endif(MSVC)
+
 
 #
 # find packages
 #
-find_package(Qt5 COMPONENTS Core Widgets Qml Quick Location WebView REQUIRED)
+find_package(Qt5 COMPONENTS Core Qml Quick Location WebView REQUIRED)
 
 
-EXTRACT_SVG_LAYERS(
+#
+# generate buildtime data
+#
+extract_svg_layers(
 	INPUT_FILES
 	${CMAKE_CURRENT_SOURCE_DIR}/resources/svg-multilayer/sidebar_button.svg
-	${CMAKE_CURRENT_SOURCE_DIR}/resources/svg-multilayer/fullscreen_button.svg
+	${CMAKE_CURRENT_SOURCE_DIR}/resources/svg-multilayer/buttons.svg
 	OUTPUT_DIR
 	${CMAKE_BINARY_DIR}/svg-multilayer-extracted/
+)
+
+generate_google_maps_html_file(
+	INPUT_FILE
+	${CMAKE_CURRENT_SOURCE_DIR}/resources/html/map.html_template
+	OUTPUT_FILE
+	${CMAKE_BINARY_DIR}/map.html
+	API_KEY
+	${GOOGLE_MAPS_API_KEY}
 )
 
 
@@ -32,6 +48,7 @@ add_library(${TARGET_NAME}
 	data_models.h
 	resources/application.qrc
 	${CMAKE_BINARY_DIR}/svg-multilayer-extracted/svg_multilayer_extracted.qrc
+	${CMAKE_BINARY_DIR}/map.qrc
 )
 
 
