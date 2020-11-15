@@ -8,6 +8,7 @@
 #include <QWidget>
 #include <QObject>
 #include <QGuiApplication>
+#include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QTimer>
@@ -48,7 +49,7 @@ public:
 	ControlDataDynamicModel mControlDataDynamicModel;
 	VehicleDataModel mVehicleDataModel;
 
-	QGuiApplication mApplication;
+	QApplication mApplication;
 	QQmlApplicationEngine mEngine;
 	QTimer mReceiveTimer;
 

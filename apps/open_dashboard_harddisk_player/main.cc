@@ -56,10 +56,13 @@ struct CliArguments
 		po::positional_options_description p;
 		p.add("config", -1);
 
-		try {
+		try
+		{
 			po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
 			po::notify(vm);
-		} catch (const boost::wrapexcept<boost::program_options::required_option>& e) {
+		}
+		catch (const boost::program_options::required_option& e)
+		{
 			std::cout << "Missing required argument " << e.get_option_name() << std::endl;
 			std::cout << desc << std::endl;
 			std::exit(-1);

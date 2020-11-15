@@ -9,15 +9,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-#if(MSVC)
-#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
-#endif(MSVC)
-
 
 #
 # find packages
 #
-find_package(Qt5 COMPONENTS Core Qml Quick Location WebView REQUIRED)
+find_package(Qt5 COMPONENTS REQUIRED Core Qml Quick Location)
 
 
 #
@@ -57,7 +53,6 @@ add_library(${TARGET_NAME}
 #
 target_link_libraries(${TARGET_NAME}
 	Qt::Core
-	Qt::WebView
 )
 
 

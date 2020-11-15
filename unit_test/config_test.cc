@@ -129,7 +129,7 @@ TEST_F(ConfigTest, ValidConfigFiles_ReadConfig_Success)
 	EXPECT_EQ(config.mTrackInformation.mName, "nurburgring_nordschleife");
 	EXPECT_NEAR(config.mTrackInformation.mLength, 21500.0, 0.001);
 	EXPECT_EQ(config.mTrackInformation.mLapRecord, std::chrono::milliseconds((5*60 + 19) * 1000 + 540));
-	EXPECT_EQ(config.mDynamicData.mFile, "dynamic_data/source_car.csv");
+	EXPECT_EQ(config.mDynamicData.mFile, "./dynamic_data/source_car.csv");
 	EXPECT_EQ(config.mDynamicData.mSampleTime, 10ms);
 }
 

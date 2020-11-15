@@ -4,12 +4,14 @@
 #include <QMetaProperty>
 #include <QObject>
 
+#include <QUrl>
+
 #define AddAttribute(datatype, name, funcName, initial_value) \
 private: \
 	datatype name = initial_value; \
 	Q_PROPERTY(datatype name READ Get##funcName WRITE Set##funcName NOTIFY  funcName##Changed) \
 public: \
-	datatype Get##funcName() const { return name; } \
+	datatype& Get##funcName() { return name; } \
 	void Set##funcName(const datatype value) \
 	{ \
 		name = value; \
@@ -31,6 +33,7 @@ class VehicleDataModel : public QObject
 
 	AddAttribute(double, inputThrottle, InputThrottle, 0.0);
 	AddAttribute(double, inputBrake, InputBrake, 0.0);
+	AddAttribute(double, inputClutch, InputClutch, 0.0);
 	AddAttribute(double, inputSteeringWheelAngle, InputSteeringWheelAngle, 0.0);
 
 	AddAttribute(double, engineRpm, EngineRpm, 0.0);
@@ -56,10 +59,11 @@ class ControlDataStaticModel : public QObject
 	Q_OBJECT
 
 	AddAttribute(bool, sidebarsDisabled, SidebarsDisabled, true);
+	AddAttribute(bool, webViewAvailable, WebViewAvailable, true);
 
-	AddAttribute(QString, videoChannelOnePath, VideoChannelOnePath, "");
-	AddAttribute(QString, videoChannelTwoPath, VideoChannelTwoPath, "");
-	AddAttribute(QString, videoChannelThreePath, VideoChannelThreePath, "");
+	AddAttribute(QUrl, videoChannelOnePath, VideoChannelOnePath, QUrl());
+	AddAttribute(QUrl, videoChannelTwoPath, VideoChannelTwoPath, QUrl());
+	AddAttribute(QUrl, videoChannelThreePath, VideoChannelThreePath, QUrl());
 };
 
 class ControlDataDynamicModel : public QObject
@@ -77,5 +81,5 @@ public:
 	AddAttribute(State, state, State, State::STOPPED);
 	AddAttribute(double, lon, Lon, 6.9491048);
 	AddAttribute(double, lat, Lat, 50.338412);
-	AddAttribute(QString, serializedData, SerializedData, "");
+	AddAttribute(QVector<QString>, serializedQuantities, SerializedQuantities, {});
 };

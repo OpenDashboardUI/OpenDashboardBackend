@@ -6,10 +6,6 @@ set(TARGET_NAME open_dashboard_common_lib)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-#if(MSVC)
-#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
-#endif(MSVC)
-
 
 #
 # find packages
@@ -32,6 +28,8 @@ add_library(${TARGET_NAME}
 	config.h
 	csv_reader.cc
 	csv_reader.h
+	xml_reader.cc
+	xml_reader.h
 )
 
 
@@ -42,6 +40,7 @@ target_link_libraries(${TARGET_NAME}
 	open_dashboard_idl
 	XercesC::XercesC
 	fmt::fmt
+	stdc++fs
 )
 
 target_include_directories(${TARGET_NAME}

@@ -11,7 +11,10 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QTimer>
+
+#if defined(OPEN_DASHBOARD_WEBVIEW_AVAILABLE)
 #include <QtWebView/QtWebView>
+#endif
 
 #include <iostream>
 
@@ -24,7 +27,10 @@ int main(int argc, char *argv[])
 
 	std::cout << "Started open_dashboard_backend" << std::endl;
 
+#if defined(OPEN_DASHBOARD_WEBVIEW_AVAILABLE)
 	QtWebView::initialize();
+#endif
+
 	Backend backend(argc, argv);
 	return backend.Run();
 }

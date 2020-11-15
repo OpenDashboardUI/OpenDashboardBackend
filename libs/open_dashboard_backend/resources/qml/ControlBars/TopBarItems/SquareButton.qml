@@ -1,4 +1,7 @@
+// Copyright (C) 2020 twyleg
 import QtQuick 2.0
+
+import "../../"
 
 
 Rectangle {

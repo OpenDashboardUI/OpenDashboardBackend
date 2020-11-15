@@ -13,7 +13,8 @@ set(CMAKE_AUTORCC ON)
 #
 # find packages
 #
-find_package(Qt5 COMPONENTS Core Widgets Qml Quick Location REQUIRED)
+find_package(Qt5 COMPONENTS REQUIRED Core Widgets Qml Quick Location Charts)
+find_package(Qt5 COMPONENTS WebView QUIET)
 find_package(Boost COMPONENTS REQUIRED program_options system)
 
 
@@ -30,6 +31,14 @@ win_deploy_qt(
 )
 
 
+if(Qt5WebEngine_DIR AND Qt5WebView_DIR)
+	message(STATUS "Webview and WebEngine available")
+	add_compile_definitions(OPEN_DASHBOARD_WEBVIEW_AVAILABLE=1)
+else()
+	message(STATUS "Webview or WebEngine not available")
+endif()
+
+
 #
 # add source files to target
 #
@@ -37,13 +46,10 @@ add_executable(${TARGET_NAME}
 	main.cc
 	backend.h
 	backend.cc
+	frontend_config.h
+	frontend_config.cc
 )
 
-
-#if(MSVC)
-#	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
-#	set_property(TARGET ${TARGET_NAME} PROPERTY CXX_STANDARD 17)
-#endif(MSVC)
 
 #
 # link against libs
@@ -57,5 +63,8 @@ target_link_libraries(${TARGET_NAME}
 	Qt::Qml
 	Qt::Quick
 	Qt::Location
+	Qt::Charts
+	Qt::WebView
 	${Boost_LIBRARIES}
+	stdc++fs
 )

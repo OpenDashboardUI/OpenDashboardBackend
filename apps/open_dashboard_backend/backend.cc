@@ -1,5 +1,6 @@
-		// Copyright (C) 2020 twyleg
+// Copyright (C) 2020 twyleg
 #include "backend.h"
+#include "frontend_config.h"
 
 #include <open_dashboard_common/config.h>
 #include <open_dashboard_common/packet.h>
@@ -27,6 +28,11 @@ std::string MessageToString(const google::protobuf::Message& message)
 	return s;
 }
 
+QUrl QUrlFromPath(const std::filesystem::path& path)
+{
+	return QUrl::fromLocalFile(QString::fromStdString(std::filesystem::absolute(path).generic_string()));
+}
+
 }
 
 CliArguments::CliArguments(int argc, char* argv[])
@@ -47,10 +53,13 @@ CliArguments::CliArguments(int argc, char* argv[])
 	po::positional_options_description p;
 	p.add("qml-file", -1);
 
-	try {
+	try
+	{
 		po::store(po::command_line_parser(argc, argv).options(desc).positional(p).run(), vm);
 		po::notify(vm);
-	} catch (const boost::program_options::required_option& e) {
+	}
+	catch (const boost::program_options::required_option& e)
+	{
 		std::cout << "Missing required argument " << e.get_option_name() << std::endl;
 		std::cout << desc << std::endl;
 		std::exit(-1);
@@ -62,7 +71,8 @@ CliArguments::CliArguments(int argc, char* argv[])
 	if (!vm["qml-file"].empty())
 		mMainQmlFilePath.emplace(vm["qml-file"].as<std::filesystem::path>());
 
-	if (vm.count("help")) {
+	if (vm.count("help"))
+	{
 		std::cout << desc << std::endl;
 		std::exit(0);
 	}
@@ -79,7 +89,7 @@ void CliArguments::ValidateRuntimeArguments()
 	if (mMainQmlFilePath)
 	{
 		THROW_IF(!std::filesystem::is_regular_file(*mMainQmlFilePath), "Qml file does not exist: {}", mMainQmlFilePath->string());
-		THROW_IF(mMainQmlFilePath->extension() != ".qml", "Qml file does not have \".qml\" extension: {}", mMainQmlFilePath->string());
+		THROW_IF(mMainQmlFilePath->extension() != ".xml", "Qml file does not have \".qml\" extension: {}", mMainQmlFilePath->string());
 	}
 }
 
@@ -108,16 +118,18 @@ int Backend::Run()
 
 	mControlDataStaticModel.SetSidebarsDisabled(cliArguments.mSidebarsDisabled);
 
+#if defined(OPEN_DASHBOARD_WEBVIEW_AVAILABLE)
+	mControlDataStaticModel.SetWebViewAvailable(true);
+#else
+	mControlDataStaticModel.SetWebViewAvailable(false);
+#endif
+
 	if (cliArguments.mConfigFilePath)
 	{
 		auto config = OpenDashboard::Common::Config::ReadConfig(*cliArguments.mConfigFilePath);
-
-		mControlDataStaticModel.SetVideoChannelOnePath(QString::fromStdString(
-				std::filesystem::absolute(config.mVideoData[0]).generic_string()));
-		mControlDataStaticModel.SetVideoChannelTwoPath(QString::fromStdString(
-				std::filesystem::absolute(config.mVideoData[1]).generic_string()));
-		mControlDataStaticModel.SetVideoChannelThreePath(QString::fromStdString(
-				std::filesystem::absolute(config.mVideoData[2]).generic_string()));
+		mControlDataStaticModel.SetVideoChannelOnePath(QUrlFromPath(config.mVideoData[0]));
+		mControlDataStaticModel.SetVideoChannelTwoPath(QUrlFromPath(config.mVideoData[1]));
+		mControlDataStaticModel.SetVideoChannelThreePath(QUrlFromPath(config.mVideoData[2]));
 	}
 
 	mEngine.addImportPath("qrc:/");
@@ -128,11 +140,11 @@ int Backend::Run()
 	mEngine.load(QUrl(QStringLiteral("qrc:/qml/Application.qml")));
 
 	if (cliArguments.mMainQmlFilePath)
-		LoadFrontend(QUrl::fromLocalFile(QString::fromStdString(cliArguments.mMainQmlFilePath->generic_string())));
+		LoadFrontend(QUrlFromPath(*cliArguments.mMainQmlFilePath));
 	else
 		LoadStartscreen();
 
-	QObject::connect(&mReceiveTimer,SIGNAL(timeout()), this, SLOT(handleTimer()));
+	QObject::connect(&mReceiveTimer, SIGNAL(timeout()), this, SLOT(handleTimer()));
 	mReceiveTimer.start(10);
 
 	return mApplication.exec();
@@ -162,16 +174,23 @@ void Backend::LoadStartscreen()
 
 void Backend::LoadFrontend(const QUrl& frontendMainFileUrl)
 {
-	const std::filesystem::path qApplicationPath = frontendMainFileUrl.toLocalFile().toStdString();
-	const std::filesystem::path qwd = std::filesystem::absolute(qApplicationPath).parent_path();
+	const std::filesystem::path frontendConfigFilePath = frontendMainFileUrl.toLocalFile().toStdString();
 
-	const QUrl qApplicationPathUrl = QUrl::fromLocalFile(QString::fromStdString(std::filesystem::absolute(qApplicationPath).generic_string()));
-	const QUrl qwdUrl = QUrl::fromLocalFile(QString::fromStdString(std::filesystem::absolute(qwd).generic_string()));
+	OpenDashboard::FrontendConfig frontendConfig(frontendConfigFilePath);
+
+	const std::filesystem::path qApplicationPath = frontendConfig.mQmlMainFile;
+	const std::filesystem::path qwd = std::filesystem::absolute(frontendConfigFilePath).parent_path();
+
+	const QUrl qApplicationPathUrl = QUrlFromPath(qApplicationPath);
+	const QUrl qwdUrl = QUrlFromPath(qwd);
 
 	QVector<QQmlContext::PropertyPair> newProperties = {
 		{ QString("qApplication"), qApplicationPathUrl },
 		{ QString("qwd"), qwdUrl }
 	};
+
+	for (auto importPath: frontendConfig.mQmlImportPaths)
+		mEngine.addImportPath(QUrlFromPath(importPath).toString());
 
 	emit(unloadFrontendRequest());
 	mEngine.rootContext()->setContextProperties(newProperties);
@@ -214,6 +233,12 @@ void Backend::handleTimer()
 		}
 	}
 
+	Control control;
+	VehicleDynamic vehicleDynamic;
+	Gps gps;
+	Powertrain powertrain;
+	DriverInput driverInput;
+
 	while (true)
 	{
 		OpenDashboard::Common::InboundPacket packet;
@@ -221,12 +246,6 @@ void Backend::handleTimer()
 		if (!mUdpReceiver.DataAvailable())
 			break;
 		const size_t len = mUdpReceiver.Receive(packet.GetData(), packet.GetBufferSize());
-
-		Control control;
-		VehicleDynamic vehicleDynamic;
-		Gps gps;
-		Powertrain powertrain;
-		DriverInput driverInput;
 
 		for (int i=0; i<packet.GetNumberOfMessages(); ++i)
 		{
@@ -296,7 +315,16 @@ void Backend::handleTimer()
 			serializedMessages << MessageToString(powertrain);
 			serializedMessages << MessageToString(driverInput);
 
-			mControlDataDynamicModel.SetSerializedData(QString::fromStdString(serializedMessages.str()));
+			auto& serializedQuantities = mControlDataDynamicModel.GetSerializedQuantities();
+			std::string quantityString;
+			for (int j = 0; std::getline(serializedMessages, quantityString, '\n'); ++j)
+			{
+				if (j >= serializedQuantities.size())
+					serializedQuantities.append(QString::fromStdString(quantityString));
+				else
+					serializedQuantities[j] = QString::fromStdString(quantityString);
+			}
+			mControlDataDynamicModel.SetSerializedQuantities(serializedQuantities);
 		}
 
 	}

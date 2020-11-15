@@ -8,6 +8,8 @@ import QtWebChannel 1.0
 Item {
 	id: mapView
 
+	focus: false
+
 	property real lat: controlDataDynamicModel.lat// * (180.0 / 3.141591653)
 	property real lon: controlDataDynamicModel.lon// * (180.0 / 3.141591653)
 
@@ -36,6 +38,9 @@ Item {
 
 	WebEngineView {
 		id: webview
+
+		// Necessary because webview doesn't release key focus
+		enabled: false
 
 		anchors.fill: parent
 		url: "qrc:/maps/map.html"
