@@ -1,0 +1,6 @@
+<RCC>
+	<qresource prefix="/common_ui">
+		<file>images/svg/open_dashboard_logo_0.svg</file>
+		<file>images/svg/open_dashboard_logo_1.svg</file>
+	</qresource>
+</RCC>

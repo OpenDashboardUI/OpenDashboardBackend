@@ -23,27 +23,27 @@ TEST(PacketTest, SingleMessagePacket_PackUnpackRawData_DataEqual)
 	Common::OutboundPacket outboundPacket;
 	Common::InboundPacket inboundPacket;
 
-	VehicleDynamic outboundVehicleDynamic;
-	outboundVehicleDynamic.set_velocity(1.0);
-	outboundVehicleDynamic.set_ax(2.0);
-	outboundVehicleDynamic.set_ay(3.0);
-	outboundVehicleDynamic.set_az(4.0);
-	outboundPacket.AddMessage(VEHICLE_DYNAMIC_MSG, outboundVehicleDynamic);
+	Proto::Dynamics outboundDynamics;
+	outboundDynamics.set_velocity(1.0);
+	outboundDynamics.set_ax(2.0);
+	outboundDynamics.set_ay(3.0);
+	outboundDynamics.set_az(4.0);
+	outboundPacket.AddMessage(Proto::DYNAMICS_MSG, outboundDynamics);
 
-	Gps outboundGps;
+	Proto::Gps outboundGps;
 	outboundGps.set_lon(50.1234);
 	outboundGps.set_lat(7.1234);
 	outboundGps.set_elevation(100.123);
-	outboundPacket.AddMessage(GPS_MSG, outboundGps);
+	outboundPacket.AddMessage(Proto::GPS_MSG, outboundGps);
 
 	std::memcpy(inboundPacket.GetData(), outboundPacket.GetData(), outboundPacket.GetBufferSize());
 
-	EXPECT_EQ(inboundPacket.GetNextMessageType(), VEHICLE_DYNAMIC_MSG);
-	VehicleDynamic inboundVehicleDynamic = inboundPacket.GetNextMessage<VehicleDynamic>();
-	EXPECT_TRUE(outboundVehicleDynamic == inboundVehicleDynamic);
+	EXPECT_EQ(inboundPacket.GetNextMessageType(), Proto::DYNAMICS_MSG);
+	Proto::Dynamics inboundVehicleDynamic = inboundPacket.GetNextMessage<Proto::Dynamics>();
+	EXPECT_TRUE(outboundDynamics == inboundVehicleDynamic);
 
-	EXPECT_EQ(inboundPacket.GetNextMessageType(), GPS_MSG);
-	Gps inboundGps = inboundPacket.GetNextMessage<Gps>();
+	EXPECT_EQ(inboundPacket.GetNextMessageType(), Proto::GPS_MSG);
+	Proto::Gps inboundGps = inboundPacket.GetNextMessage<Proto::Gps>();
 	EXPECT_TRUE(outboundGps == inboundGps);
 }
 

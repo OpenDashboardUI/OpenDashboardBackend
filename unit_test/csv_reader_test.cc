@@ -56,9 +56,7 @@ void PrepareValidCsvFile()
 	);
 
 	mCsvReader = std::make_unique<Common::CsvReader>(mTestFile);
-	mCsvReader->ReadHeader();
-	mCsvReader->IgnoreLine();
-	mCsvReader->IgnoreLine();
+	mCsvReader->ReadFileToCache(true, 2);
 }
 
 void PrepareValidCsvFileWithSpecialCharacters()
@@ -76,9 +74,7 @@ void PrepareValidCsvFileWithSpecialCharacters()
 	);
 
 	mCsvReader = std::make_unique<Common::CsvReader>(mTestFile);
-	mCsvReader->ReadHeader();
-	mCsvReader->IgnoreLine();
-	mCsvReader->IgnoreLine();
+	mCsvReader->ReadFileToCache(true, 2);
 }
 
 void PrepareInvalidCsvFile()
@@ -88,34 +84,33 @@ void PrepareInvalidCsvFile()
 					 {"ColA","ColB","ColC"},
 					 {"double","int","string"},
 					 {"foo","foo","foo"},
-					 {"1.1","1","one","Cause for Error"},
+					 {"1.1","2","one"},
+					 {"2.2","2","two","Reason for Error"},
 			 }
 	);
 
 	mCsvReader = std::make_unique<Common::CsvReader>(mTestFile);
-	mCsvReader->ReadHeader();
-	mCsvReader->IgnoreLine();
-	mCsvReader->IgnoreLine();
+	mCsvReader->ReadFileToCache(true, 2);
 }
 
 void ExpectCorrectParsedCsvFile()
 {
-	EXPECT_TRUE(mCsvReader->ReadLine());
+	mCsvReader->ReadLine(0);
 	EXPECT_NEAR(mCsvReader->GetValue<double>("ColA"), 1.1, 0.001);
 	EXPECT_EQ(mCsvReader->GetValue<int>("ColB"), 1);
 	EXPECT_EQ(mCsvReader->GetValue<std::string>("ColC"), "one");
 
-	EXPECT_TRUE(mCsvReader->ReadLine());
+	mCsvReader->ReadLine(1);
 	EXPECT_NEAR(mCsvReader->GetValue<double>("ColA"), 2.1, 0.001);
 	EXPECT_EQ(mCsvReader->GetValue<int>("ColB"), 2);
 	EXPECT_EQ(mCsvReader->GetValue<std::string>("ColC"), "two");
 
-	EXPECT_TRUE(mCsvReader->ReadLine());
+	mCsvReader->ReadLine(2);
 	EXPECT_NEAR(mCsvReader->GetValue<double>("ColA"), 3.1, 0.001);
 	EXPECT_EQ(mCsvReader->GetValue<int>("ColB"), 3);
 	EXPECT_EQ(mCsvReader->GetValue<std::string>("ColC"), "three");
 
-	EXPECT_TRUE(mCsvReader->ReadLine());
+	mCsvReader->ReadLine(3);
 	EXPECT_NEAR(mCsvReader->GetValue<double>("ColA"), 4.1, 0.001);
 	EXPECT_EQ(mCsvReader->GetValue<int>("ColB"), 4);
 	EXPECT_EQ(mCsvReader->GetValue<std::string>("ColC"), "four");
@@ -142,32 +137,28 @@ TEST_F(CsvReaderTest, ValidCsvFileWithSpecialCharacters_GetAllAttributes_Success
 TEST_F(CsvReaderTest, ValidCsvFile_ReadUnknownAttribute_Throw)
 {
 	PrepareValidCsvFile();
-	EXPECT_TRUE(mCsvReader->ReadLine());
+	mCsvReader->ReadLine(0);
 	EXPECT_THROW(mCsvReader->GetValue<double>("MissingColumn"), std::runtime_error);
 }
 
 TEST_F(CsvReaderTest, ValidCsvFile_ReadUnknownAttributeByIndex_Throw)
 {
 	PrepareValidCsvFile();
-	EXPECT_TRUE(mCsvReader->ReadLine());
+	mCsvReader->ReadLine(0);
 	EXPECT_THROW(mCsvReader->GetValue<double>(4), std::runtime_error);
 }
 
 TEST_F(CsvReaderTest, InvalidCsvFileWith_ReadMalformedLine_Throw)
 {
 	PrepareInvalidCsvFile();
-	EXPECT_THROW(mCsvReader->ReadLine(), std::runtime_error);
+	mCsvReader->ReadLine(0);
+	EXPECT_THROW(mCsvReader->ReadLine(1), std::runtime_error);
 }
 
 TEST_F(CsvReaderTest, ValidCsvFile_ReadMoreLinesThanAvailable_EndOfFileIndicated)
 {
 	PrepareValidCsvFile();
-	EXPECT_TRUE(mCsvReader->ReadLine());
-	EXPECT_TRUE(mCsvReader->ReadLine());
-	EXPECT_TRUE(mCsvReader->ReadLine());
-	EXPECT_TRUE(mCsvReader->ReadLine());
-	EXPECT_FALSE(mCsvReader->ReadLine());
-	EXPECT_FALSE(mCsvReader->IgnoreLine());
+	EXPECT_EQ(mCsvReader->GetNumberOfLines(), 4);
 }
 
 }

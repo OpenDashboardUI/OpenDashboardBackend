@@ -13,7 +13,9 @@ set(CMAKE_AUTORCC ON)
 #
 # find packages
 #
-find_package(Qt5 COMPONENTS REQUIRED Core Qml Quick Location)
+find_package(Qt5 COMPONENTS REQUIRED Core Widgets Qml Quick Location Charts)
+find_package(Qt5 COMPONENTS WebView QUIET)
+find_package(Boost COMPONENTS REQUIRED program_options system)
 
 
 #
@@ -38,11 +40,28 @@ generate_google_maps_html_file(
 
 
 #
+# Add compile definitions
+#
+if(Qt5WebEngine_DIR AND Qt5WebView_DIR)
+	message(STATUS "Webview and WebEngine available")
+	add_compile_definitions(OPEN_DASHBOARD_WEBVIEW_AVAILABLE=1)
+else()
+	message(STATUS "Webview or WebEngine not available")
+endif()
+
+
+#
 # add source files to target
 #
 add_library(${TARGET_NAME}
-	data_models.h
-	resources/application.qrc
+	backend.cc
+	backend.h
+	frontend_config.cc
+	frontend_config.h
+	cli_arguments.cc
+	cli_arguments.h
+
+	resources/backend_resources.qrc
 	${CMAKE_BINARY_DIR}/svg-multilayer-extracted/svg_multilayer_extracted.qrc
 	${CMAKE_BINARY_DIR}/map.qrc
 )
@@ -52,7 +71,19 @@ add_library(${TARGET_NAME}
 # link against libs
 #
 target_link_libraries(${TARGET_NAME}
+	open_dashboard_idl
+	open_dashboard_common_lib
+	open_dashboard_common_ui_lib
+	open_dashboard_data_models_lib
 	Qt::Core
+	Qt::Widgets
+	Qt::Qml
+	Qt::Quick
+	Qt::Location
+	Qt::Charts
+	Qt::WebView
+	${Boost_LIBRARIES}
+#	stdc++fs
 )
 
 

@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/">
+	<qresource prefix="/backend">
 		<file>qml/Application.qml</file>
 		<file>qml/FrontendLoader.qml</file>
         <file>qml/Svg.qml</file>
@@ -17,6 +17,5 @@
         <file>html/style.css</file>
         <file>html/js/backend_connection.js</file>
         <file>html/js/google_maps.js</file>
-        <file>svg/open_dashboard_logo.svg</file>
     </qresource>
 </RCC>

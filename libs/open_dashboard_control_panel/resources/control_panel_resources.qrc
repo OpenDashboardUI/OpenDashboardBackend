@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/control_panel">
+		<file>images/external/background_0.jpg</file>
+		<file>images/external/background_1.jpg</file>
+		<file>images/external/steering_wheel.svg</file>
+        <file>qml/ControlPanel.qml</file>
+        <file>qml/items/CustomSlider.qml</file>
+        <file>qml/items/AccelerationItem.qml</file>
+        <file>qml/items/PedalsItem.qml</file>
+        <file>qml/items/PedalProgressBar.qml</file>
+        <file>qml/items/SteeringWheelItem.qml</file>
+    </qresource>
+</RCC>

@@ -12,7 +12,7 @@ Image {
 	sourceSize: Qt.size(width, height)
 	smooth: true
 
-	source: "qrc:/svg/open_dashboard_logo.svg"
+	source: "qrc:/common_ui/images/svg/open_dashboard_logo_0.svg"
 
 	signal clicked()
 

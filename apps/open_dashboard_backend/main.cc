@@ -1,17 +1,7 @@
 // Copyright (C) 2020 twyleg
-#include "backend.h"
+#include <open_dashboard_backend/backend.h>
 
-#include <open_dashboard_common/udp_transceiver.h>
-
-#include <open_dashboard.pb.h>
-
-#include <QWidget>
 #include <QObject>
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include <QQmlContext>
-#include <QTimer>
-
 #if defined(OPEN_DASHBOARD_WEBVIEW_AVAILABLE)
 #include <QtWebView/QtWebView>
 #endif
@@ -21,7 +11,8 @@
 
 int main(int argc, char *argv[])
 {
-	Q_INIT_RESOURCE(application);
+	Q_INIT_RESOURCE(common_ui_resources);
+	Q_INIT_RESOURCE(backend_resources);
 	Q_INIT_RESOURCE(svg_multilayer_extracted);
 	Q_INIT_RESOURCE(map);
 
@@ -31,6 +22,6 @@ int main(int argc, char *argv[])
 	QtWebView::initialize();
 #endif
 
-	Backend backend(argc, argv);
+	OpenDashboard::Backend::Backend backend(argc, argv);
 	return backend.Run();
 }

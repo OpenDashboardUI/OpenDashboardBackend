@@ -36,21 +36,38 @@ bool CsvReader::IgnoreLine()
 	return !line.empty();
 }
 
-bool CsvReader::ReadLine()
+void CsvReader::ReadFileToCache(bool readHeader, size_t ignoreLines)
 {
+	if (readHeader)
+		ReadHeader();
+
+	for (size_t i = 0; i<ignoreLines; ++i)
+	{
+		if (!IgnoreLine())
+			return;
+	}
+
 	std::string line;
+	std::getline(mInputFile, line);
+	while (!line.empty())
+	{
+		boost::range::remove_erase_if(line, boost::is_any_of(mCharFilterString));
+		mLineCache.push_back(line);
+		std::getline(mInputFile, line);
+	}
+}
+
+void CsvReader::ReadLine(const size_t lineNumber)
+{
+	THROW_IF(lineNumber > mLineCache.size(), "Reuqest line (line number={}) out of bounds", lineNumber);
+
+	std::string line = mLineCache[lineNumber];
 	std::vector<std::string> parts;
 
-	std::getline(mInputFile, line);
-	if (line.empty())
-		return false;
-
-	boost::range::remove_erase_if(line, boost::is_any_of(mCharFilterString));
 	boost::split(parts, line, boost::is_any_of(","));
 	THROW_IF(parts.size() != mColumnNames.size(), "CSV line has unexpected number of columns: {}", parts.size());
 
-	mLastLineContent = std::move(parts);
-	return true;
+	mCurrentLineContent = std::move(parts);
 }
 
 }

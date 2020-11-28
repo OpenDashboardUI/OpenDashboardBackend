@@ -7,6 +7,7 @@
 #include <open_dashboard_common/packet.h>
 #include <open_dashboard_common/config.h>
 #include <open_dashboard_common/helper.h>
+#include <open_dashboard_common/harddisk_player.h>
 
 #include <open_dashboard.pb.h>
 
@@ -96,71 +97,46 @@ int main(int argc, char* argv[])
 	boost::posix_time::milliseconds interval(config.mDynamicData.mSampleTime.count());
 	boost::asio::deadline_timer timer(ioService, interval);
 
-	Common::CsvReader csvReader(config.mDynamicData.mFile);
 	Common::UdpTransmitter udpTransmitter(cliArguments.mHostname, cliArguments.mPort);
-	csvReader.ReadHeader();
-	csvReader.IgnoreLine();
-	csvReader.IgnoreLine();
+	Common::HarddiskPlayer harddiskPlayer(config.mDynamicData.mFile);
 
 	{
 		Common::OutboundPacket packet;
-		Control control;
-		control.set_state(STARTED);
-		packet.AddMessage(CONTROL_MSG, control);
+		Proto::Control control;
+		control.set_state(Proto::STARTED);
+		packet.AddMessage(Proto::CONTROL_MSG, control);
 		udpTransmitter.Transmit(packet.GetData(), packet.GetSize());
 	}
+
+	const size_t framesToRead = harddiskPlayer.GetNumberOfFrames();
+	size_t currentFrame = 0;
 
 	std::function<void(const boost::system::error_code&)> run = [&](const boost::system::error_code&){
 		timer.expires_at(timer.expires_at() + interval);
 		timer.async_wait(run);
 
-		if (csvReader.ReadLine() == false)
+		if (currentFrame == framesToRead)
 			std::exit(0);
 
+		harddiskPlayer.ReadFrame(currentFrame++);
+
 		Common::OutboundPacket packet;
+		Proto::Dynamics dynamics = harddiskPlayer.GetDynamics();
+		Proto::DriverInput driverInput = harddiskPlayer.GetDriverInput();
+		Proto::Powertrain powertrain = harddiskPlayer.GetPowertrain();
+		Proto::Gps gps = harddiskPlayer.GetGps();
 
-		VehicleDynamic vehicleDynamic;
-		vehicleDynamic.set_velocity(csvReader.GetValue<double>("Vhcl.v") * 3.6);
-		vehicleDynamic.set_ax(csvReader.GetValue<double>("Car.ax"));
-		vehicleDynamic.set_ay(csvReader.GetValue<double>("Car.ay"));
-		vehicleDynamic.set_az(csvReader.GetValue<double>("Car.az"));
-		packet.AddMessage(VEHICLE_DYNAMIC_MSG, vehicleDynamic);
-		std::cout << vehicleDynamic << std::endl;
-
-		DriverInput driverInput;
-		driverInput.set_throttle(csvReader.GetValue<double>("VC.Gas"));
-		driverInput.set_brake(csvReader.GetValue<double>("VC.Brake"));
-		driverInput.set_steering_wheel_angle(csvReader.GetValue<double>("VC.Steer.Ang") * (180.0 / M_PI));
-		packet.AddMessage(DRIVER_INPUT_MSG, driverInput);
-		std::cout << driverInput << std::endl;
-
-		Powertrain powertrain;
-		powertrain.set_rotation(csvReader.GetValue<double>("Vhcl.Engine.rotv") * (60.0 / (2*M_PI)));
-		powertrain.set_gear(csvReader.GetValue<int>("VC.GearNo"));
-
-		powertrain.set_engine_power_out(csvReader.GetValue<double>("PT.Engine.PwrO") / 1000.0);
-		powertrain.set_engine_torque(csvReader.GetValue<double>("PT.Engine.Trq"));
-		powertrain.set_engine_fuel_consumption_abs(csvReader.GetValue<double>("PT.Control.Consump.Fuel.Abs"));
-		powertrain.set_engine_fuel_consumption_act(csvReader.GetValue<double>("PT.Control.Consump.Fuel.Act"));
-		powertrain.set_engine_fuel_consumption_avg(csvReader.GetValue<double>("PT.Control.Consump.Fuel.Avg"));
-		powertrain.set_engine_fuel_level(csvReader.GetValue<double>("PT.Engine.FuelFlow"));
-
-		powertrain.set_gearbox_power_in(csvReader.GetValue<double>("PT.GearBox.PwrI") / 1000.0);
-		powertrain.set_gearbox_power_out(csvReader.GetValue<double>("PT.GearBox.PwrO") / 1000.0);
-		powertrain.set_gearbox_rotation_in(csvReader.GetValue<double>("PT.GearBox.rotv_in")  * (60.0 / (2*M_PI)));
-		powertrain.set_gearbox_rotation_out(csvReader.GetValue<double>("PT.GearBox.rotv_out")  * (60.0 / (2*M_PI)));
-
-		packet.AddMessage(POWERTRAIN_MSG, powertrain);
-		std::cout << powertrain << std::endl;
-
-		Gps gps;
-		gps.set_lon(csvReader.GetValue<double>("Car.Road.GCS.Long") * (180.0 / M_PI));
-		gps.set_lat(csvReader.GetValue<double>("Car.Road.GCS.Lat") * (180.0 / M_PI));
-		gps.set_elevation(csvReader.GetValue<double>("Car.Road.GCS.Elev"));
-		packet.AddMessage(GPS_MSG, gps);
-		std::cout << gps << std::endl;
+		packet.AddMessage(Proto::DYNAMICS_MSG, dynamics);
+		packet.AddMessage(Proto::DRIVER_INPUT_MSG, driverInput);
+		packet.AddMessage(Proto::POWERTRAIN_MSG, powertrain);
+		packet.AddMessage(Proto::GPS_MSG, gps);
 
 		udpTransmitter.Transmit(packet.GetData(), packet.GetSize());
+
+		std::cout << dynamics << std::endl;
+		std::cout << driverInput << std::endl;
+		std::cout << powertrain << std::endl;
+		std::cout << gps << std::endl;
 	};
 
 	timer.async_wait(run);

@@ -20,9 +20,14 @@ public:
 
 	explicit CsvReader(const std::filesystem::path& filepath, const std::string& charFilterString = "\n\r\"");
 
-	void ReadHeader();
-	bool IgnoreLine();
-	bool ReadLine();
+	void ReadFileToCache(bool readHeader, size_t ignoreLines);
+
+	void ReadLine(const size_t lineNumber);
+
+	size_t GetNumberOfLines()
+	{
+		return mLineCache.size();
+	}
 
 	template<class T>
 	T GetValue(const std::string& columnName);
@@ -32,10 +37,14 @@ public:
 
 private:
 
+	void ReadHeader();
+	bool IgnoreLine();
+
 	const std::string mCharFilterString;
 	std::ifstream mInputFile;
 	std::unordered_map<std::string, int> mColumnNames;
-	std::vector<std::string> mLastLineContent;
+	std::vector<std::string> mCurrentLineContent;
+	std::vector<std::string> mLineCache;
 };
 
 template<class T>
@@ -49,8 +58,8 @@ T CsvReader::GetValue(const std::string& columnName)
 template<class T>
 T CsvReader::GetValue(const int columnIndex)
 {
-	THROW_IF (columnIndex > mLastLineContent.size(), "Requested column (index={}) out of bounds", columnIndex);
-	return boost::lexical_cast<T>(mLastLineContent[columnIndex]);
+	THROW_IF(columnIndex > mCurrentLineContent.size(), "Requested column (index={}) out of bounds", columnIndex);
+	return boost::lexical_cast<T>(mCurrentLineContent[columnIndex]);
 }
 
 }

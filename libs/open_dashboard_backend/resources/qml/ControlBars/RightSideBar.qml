@@ -10,8 +10,8 @@ ControlBar {
 	widthRelative: 0.15
 	heightRelative: 1.00
 
-	enabled: !controlDataStaticModel.sidebarsDisabled
-	visible: !controlDataStaticModel.sidebarsDisabled
+	enabled: !dataModel.controlDataStatic.sidebarsDisabled
+	visible: !dataModel.controlDataStatic.sidebarsDisabled
 
 	Column {
 
@@ -20,7 +20,7 @@ ControlBar {
 		anchors.centerIn: parent
 		spacing: 20
 
-		property int currentState: controlDataDynamicModel.state
+		property int currentState: dataModel.controlDataDynamic.state
 
 		onCurrentStateChanged: {
 
@@ -43,13 +43,12 @@ ControlBar {
 			}
 		}
 
-
 		VideoChannel {
 			id: videoChannel0
 
 			autoPlay: false
 			width: parent.width
-			source: controlDataStaticModel.videoChannelOnePath
+			source: dataModel.controlDataStatic.videoChannelOnePath
 		}
 
 		VideoChannel {
@@ -57,7 +56,7 @@ ControlBar {
 
 			autoPlay: false
 			width: parent.width
-			source: controlDataStaticModel.videoChannelTwoPath
+			source: dataModel.controlDataStatic.videoChannelTwoPath
 		}
 
 		VideoChannel {
@@ -65,7 +64,7 @@ ControlBar {
 
 			autoPlay: false
 			width: parent.width
-			source: controlDataStaticModel.videoChannelThreePath
+			source: dataModel.controlDataStatic.videoChannelThreePath
 		}
 
 		Loader {
@@ -77,8 +76,8 @@ ControlBar {
 			}
 
 			Component.onCompleted: {
-				if (controlDataStaticModel.webViewAvailable) {
-					source = "qrc:/qml/ControlBars/RightSideBarItems/MapView.qml"
+				if (dataModel.controlDataStatic.webViewAvailable) {
+					source = "qrc:/backend/qml/ControlBars/RightSideBarItems/MapView.qml"
 				}
 			}
 		}

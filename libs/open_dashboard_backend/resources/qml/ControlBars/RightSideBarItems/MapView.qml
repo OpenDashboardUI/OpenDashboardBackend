@@ -10,8 +10,8 @@ Item {
 
 	focus: false
 
-	property real lat: controlDataDynamicModel.lat// * (180.0 / 3.141591653)
-	property real lon: controlDataDynamicModel.lon// * (180.0 / 3.141591653)
+	property real lat: dataModel.vehicleData.gps.positionLat// * (180.0 / 3.141591653)
+	property real lon: dataModel.vehicleData.gps.positionLon// * (180.0 / 3.141591653)
 
 	Timer {
 		id: timer

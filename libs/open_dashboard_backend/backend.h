@@ -1,13 +1,13 @@
 // Copyright (C) 2020 twyleg
 #pragma once
 
-#include <open_dashboard_backend/data_models.h>
+#include "cli_arguments.h"
 
+#include <open_dashboard_data_models/data_models.h>
 #include <open_dashboard_common/udp_transceiver.h>
 
 #include <QWidget>
 #include <QObject>
-#include <QGuiApplication>
 #include <QApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
@@ -16,19 +16,7 @@
 #include <filesystem>
 #include <optional>
 
-struct CliArguments
-{
-	CliArguments(int argc, char* argv[]);
-	void ValidateRuntimeArguments();
-
-	std::string mHostname;
-	int mPort;
-	std::optional<std::filesystem::path> mConfigFilePath;
-	std::optional<std::filesystem::path> mMainQmlFilePath;
-
-	bool mSidebarsDisabled;
-};
-
+namespace OpenDashboard::Backend {
 
 class Backend : public QObject
 {
@@ -44,10 +32,7 @@ public:
 	char** mArgv;
 
 	CliArguments cliArguments;
-
-	ControlDataStaticModel mControlDataStaticModel;
-	ControlDataDynamicModel mControlDataDynamicModel;
-	VehicleDataModel mVehicleDataModel;
+	OpenDashboard::DataModels::DataModel mDataModel;
 
 	QApplication mApplication;
 	QQmlApplicationEngine mEngine;
@@ -62,6 +47,9 @@ private:
 	void LoadFrontend(const QUrl& frontendMainFileUrl);
 	void ReloadFrontend();
 
+	void ReadNetworkImu();
+	void ReadVehicleData();
+
 public slots:
 
 	void handleTimer();
@@ -75,3 +63,4 @@ signals:
 
 };
 
+}

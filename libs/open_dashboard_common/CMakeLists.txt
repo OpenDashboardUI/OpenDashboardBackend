@@ -10,7 +10,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #
 # find packages
 #
-find_package(Qt5 COMPONENTS Core Qml Quick Location REQUIRED)
+#find_package(Qt5 COMPONENTS Core Qml Quick Location REQUIRED)
 find_package(XercesC REQUIRED)
 find_package(fmt REQUIRED)
 find_path(BOOST_ASIO_INCLUDE_DIRS "boost/asio.hpp")
@@ -30,6 +30,8 @@ add_library(${TARGET_NAME}
 	csv_reader.h
 	xml_reader.cc
 	xml_reader.h
+	harddisk_player.cc
+	harddisk_player.h
 )
 
 
@@ -40,7 +42,7 @@ target_link_libraries(${TARGET_NAME}
 	open_dashboard_idl
 	XercesC::XercesC
 	fmt::fmt
-	stdc++fs
+#	stdc++fs
 )
 
 target_include_directories(${TARGET_NAME}

@@ -12,8 +12,8 @@ ControlBar {
 	widthRelative: 0.09
 	heightRelative: 1.00
 
-	enabled: !controlDataStaticModel.sidebarsDisabled
-	visible: !controlDataStaticModel.sidebarsDisabled
+	enabled: !dataModel.controlDataStatic.sidebarsDisabled
+	visible: !dataModel.controlDataStatic.sidebarsDisabled
 
 	Item {
 
@@ -35,17 +35,17 @@ ControlBar {
 		}
 
 		Connections {
-			target: controlDataDynamicModel
+			target: dataModel
 
 			function onSerializedQuantitiesChanged() {
-				var diff = controlDataDynamicModel.serializedQuantities.length - column.children.length
+				var diff = dataModel.serializedQuantities.length - column.children.length
 				if (diff) {
 					for (var i=0; i<diff; ++i) {
 						column.addLine()
 					}
 				}
-				for (i=0; i<controlDataDynamicModel.serializedQuantities.length; ++i) {
-					column.children[i].text = controlDataDynamicModel.serializedQuantities[i]
+				for (i=0; i<dataModel.serializedQuantities.length; ++i) {
+					column.children[i].text = dataModel.serializedQuantities[i]
 				}
 			}
 		}
