@@ -1,25 +1,22 @@
 // Copyright (C) 2020 twyleg
 import QtQuick 2.0
 
-Image {
-
+Rectangle {
 	id: logoStartscreen
 
 	width: 500
 	height: 500
-
-	fillMode: Image.PreserveAspectFit
-	sourceSize: Qt.size(width, height)
-	smooth: true
-
-	source: "qrc:/common_ui/images/svg/open_dashboard_logo_0.svg"
+	color: "black"
 
 	signal clicked()
 
-	MouseArea {
-		anchors.fill: parent
+	Svg {
+		id: logoStartscreenImage
 
-		onClicked: logoStartscreen.clicked()
-
+		source: "qrc:/common_ui/images/svg/open_dashboard_logo_0.svg"
+		MouseArea {
+			anchors.fill: parent
+			onClicked: logoStartscreen.clicked()
+		}
 	}
 }

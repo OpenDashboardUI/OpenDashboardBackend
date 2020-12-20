@@ -1,3 +1,4 @@
+// Copyright (C) 2020 twyleg
 #pragma once
 
 #include <xercesc/dom/DOMNodeIterator.hpp>

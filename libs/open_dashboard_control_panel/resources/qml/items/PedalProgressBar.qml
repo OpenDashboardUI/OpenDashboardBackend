@@ -1,3 +1,4 @@
+// Copyright (C) 2020 twyleg
 import QtQuick 2.0
 import QtQuick.Layouts 1.15
 import QtQuick.Controls 1.4
@@ -8,6 +9,8 @@ ProgressBar {
 
 	property string text
 	property color color
+
+	property alias active: mouseArea.containsMouse
 
 	height: parent.height
 
@@ -42,6 +45,9 @@ ProgressBar {
 	}
 
 	MouseArea {
+		id: mouseArea
+
+		hoverEnabled: true
 		anchors.fill: parent
 		onPositionChanged: {
 			if (pressed) {

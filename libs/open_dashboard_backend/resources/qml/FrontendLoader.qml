@@ -1,18 +1,20 @@
 // Copyright (C) 2020 twyleg
 import QtQuick 2.0
 import QtQuick.Dialogs 1.0
+import Qt.labs.settings 1.1
 
 Loader {
 	id: frontendLoader
 
 	focus: true
+	enabled: true
 	Keys.forwardTo: [item]
 	anchors.centerIn: parent
 
 	property int nativeWidth: 0
 	property int nativeHeight: 0
 	property real zoom: 1.0
-	property color backgroundColor: "transparent"
+	property color color: "transparent"
 
 	signal clicked()
 
@@ -43,12 +45,18 @@ Loader {
 		}
 	}
 
+	Settings {
+		id: settings
+
+		property alias lastFile: fileDialog.folder
+	}
+
 	onLoaded: {
 		nativeWidth = item.width
 		nativeHeight = item.height
 
 		if (item.color !== undefined)
-			backgroundColor = item.color
+			color = item.color
 
 		// This is only relevant for the LogoStartscreen to open the file open dialog on click
 		if (item.clicked !== undefined)
@@ -58,6 +66,11 @@ Loader {
 	onZoomChanged: {
 		item.width = nativeWidth * zoom
 		item.height = nativeHeight * zoom
+	}
+
+	onColorChanged: {
+		if (item !== null && item.color !== undefined)
+			item.color = color
 	}
 
 	function zoomIn() {

@@ -60,7 +60,8 @@ public:
 	void AddMessage(const uint32_t mesageType, const void* data, const size_t len);
 
 	char* GetData() { return mPacketBuffer.data(); }
-	size_t GetSize() { return mBufferUsedLen; }
+	const char* GetData() const { return mPacketBuffer.data(); }
+	size_t GetSize() const { return mBufferUsedLen; }
 
 	size_t GetBufferSize() { return PACKET_BUFFER_SIZE; }
 

@@ -1,3 +1,4 @@
+// Copyright (C) 2020 twyleg
 #include "xml_reader.h"
 #include "helper.h"
 

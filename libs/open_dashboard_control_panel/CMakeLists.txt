@@ -13,12 +13,14 @@ set(CMAKE_AUTORCC ON)
 #
 # find packages
 #
-find_package(Qt5 COMPONENTS Core Widgets Qml Quick REQUIRED)
+find_package(Qt5 COMPONENTS Core Widgets Qml Quick QuickControls2 REQUIRED)
 
 
 add_library(${TARGET_NAME}
-	control_panel.h
 	control_panel.cc
+	control_panel.h
+	harddisk_player_controller.cc
+	harddisk_player_controller.h
 	resources/control_panel_resources.qrc
 )
 
@@ -35,6 +37,7 @@ target_link_libraries(${TARGET_NAME}
 	Qt::Widgets
 	Qt::Qml
 	Qt::Quick
+	Qt::QuickControls2
 )
 
 

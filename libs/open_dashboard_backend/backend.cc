@@ -4,6 +4,7 @@
 
 #include <open_dashboard_common/config.h>
 #include <open_dashboard_common/packet.h>
+#include <open_dashboard_common_ui/helper.h>
 
 #include <open_dashboard.pb.h>
 
@@ -12,6 +13,9 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 
+#include <QQuickStyle>
+#include <QSettings>
+
 #include <iostream>
 #include <string>
 
@@ -19,9 +23,15 @@ namespace OpenDashboard::Backend {
 
 namespace {
 
-QUrl QUrlFromPath(const std::filesystem::path& path)
+QUrl GetMiddlewareMainFilePath()
 {
-	return QUrl::fromLocalFile(QString::fromStdString(std::filesystem::absolute(path).generic_string()));
+#if defined(USE_RELATIVE_QML_FILES)
+	return QStringLiteral("file://"
+						  OPEN_DASHBOARD_SOURCE_DIR
+						  "/libs/open_dashboard_backend/resources/qml/Application.qml");
+#else
+	return QStringLiteral("qrc:/backend/qml/Application.qml");
+#endif
 }
 
 }
@@ -34,9 +44,12 @@ Backend::Backend(int argc, char* argv[], QObject* parent)
 	mApplication(mArgc, mArgv),
 	mReceiveTimer(this),
 	mUdpReceiver(cliArguments.mHostname, cliArguments.mPort),
-	mUdpImuReceiver(cliArguments.mHostname, cliArguments.mPort+1)
+	mUdpImuReceiver(cliArguments.mHostname, cliArguments.mPort+1),
+	mMapGenerator(Common::GetTempAppDirectory("OpenDashboardBackend"))
 {
 	cliArguments.ValidateRuntimeArguments();
+
+	QQuickStyle::setStyle("Material");
 }
 
 Backend::~Backend()
@@ -46,8 +59,22 @@ Backend::~Backend()
 
 int Backend::Run()
 {
-	mApplication.setOrganizationName("OpenDashboardBackend");
-	mApplication.setOrganizationDomain("OpenDashboardBackend");
+	mApplication.setOrganizationDomain("org.opendashboard");
+	mApplication.setOrganizationName("OpenDashboard");
+	mApplication.setApplicationName("OpenDashboardBackend");
+
+	QSettings settings;
+
+
+	if (settings.contains("googleMapsApiKey"))
+	{
+		mDataModel.GetControlDataStatic()->SetMapFilePath(mMapGenerator.generateMap(
+				settings.value("googleMapsApiKey").toString()));
+	}
+	else
+	{
+		mDataModel.GetControlDataStatic()->SetMapFilePath(mMapGenerator.generateMap("API_KEY_UNAVAILABLE"));
+	}
 
 	mDataModel.GetControlDataStatic()->SetSidebarsDisabled(cliArguments.mSidebarsDisabled);
 
@@ -60,18 +87,19 @@ int Backend::Run()
 	if (cliArguments.mConfigFilePath)
 	{
 		auto config = OpenDashboard::Common::Config::ReadConfig(*cliArguments.mConfigFilePath);
-		mDataModel.GetControlDataStatic()->SetVideoChannelOnePath(QUrlFromPath(config.mVideoData[0]));
-		mDataModel.GetControlDataStatic()->SetVideoChannelTwoPath(QUrlFromPath(config.mVideoData[1]));
-		mDataModel.GetControlDataStatic()->SetVideoChannelThreePath(QUrlFromPath(config.mVideoData[2]));
+		mDataModel.GetControlDataStatic()->SetVideoChannelOnePath(CommonUI::QUrlFromPath(config.mVideoData[0]));
+		mDataModel.GetControlDataStatic()->SetVideoChannelTwoPath(CommonUI::QUrlFromPath(config.mVideoData[1]));
+		mDataModel.GetControlDataStatic()->SetVideoChannelThreePath(CommonUI::QUrlFromPath(config.mVideoData[2]));
 	}
 
 	mEngine.addImportPath("qrc:/");
 	mEngine.rootContext()->setContextProperty("dataModel", &mDataModel);
+	mEngine.rootContext()->setContextProperty("mapGenerator", &mMapGenerator);
 	mEngine.rootContext()->setContextProperty("backend", this);
-	mEngine.load(QUrl(QStringLiteral("qrc:/backend/qml/Application.qml")));
+	mEngine.load(GetMiddlewareMainFilePath());
 
 	if (cliArguments.mMainQmlFilePath)
-		LoadFrontend(QUrlFromPath(*cliArguments.mMainQmlFilePath));
+		LoadFrontend(CommonUI::QUrlFromPath(*cliArguments.mMainQmlFilePath));
 	else
 		LoadStartscreen();
 
@@ -112,8 +140,8 @@ void Backend::LoadFrontend(const QUrl& frontendMainFileUrl)
 	const std::filesystem::path qApplicationPath = frontendConfig.mQmlMainFile;
 	const std::filesystem::path qwd = std::filesystem::absolute(frontendConfigFilePath).parent_path();
 
-	const QUrl qApplicationPathUrl = QUrlFromPath(qApplicationPath);
-	const QUrl qwdUrl = QUrlFromPath(qwd);
+	const QUrl qApplicationPathUrl = CommonUI::QUrlFromPath(qApplicationPath);
+	const QUrl qwdUrl = CommonUI::QUrlFromPath(qwd);
 
 	QVector<QQmlContext::PropertyPair> newProperties = {
 		{ QString("qApplication"), qApplicationPathUrl },
@@ -121,7 +149,7 @@ void Backend::LoadFrontend(const QUrl& frontendMainFileUrl)
 	};
 
 	for (auto importPath: frontendConfig.mQmlImportPaths)
-		mEngine.addImportPath(QUrlFromPath(importPath).toString());
+		mEngine.addImportPath(CommonUI::QUrlFromPath(importPath).toString());
 
 	emit(unloadFrontendRequest());
 	mEngine.rootContext()->setContextProperties(newProperties);

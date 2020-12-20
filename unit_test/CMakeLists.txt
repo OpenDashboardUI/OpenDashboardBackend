@@ -16,10 +16,12 @@ add_executable(${TARGET_NAME}
 	csv_reader_test.cc
 	config_test.cc
 	helper_test.cc
+	map_generator_test.cc
 )
 
 target_link_libraries(${TARGET_NAME}
 	open_dashboard_common_lib
+	open_dashboard_common_ui_lib
 	GTest::gmock
 	GTest::gtest
 	GTest::gmock_main

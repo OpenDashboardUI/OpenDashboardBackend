@@ -3,17 +3,17 @@ import QtQuick 2.0
 
 import QtCharts 2.4
 
-import "./LeftSideBarItems"
+import "./ControlBarLeftItems"
 
 ControlBar {
-	id: leftSideBar
+	id: controlBarLeft
 
 	layout: ControlBar.Layout.LEFT
 	widthRelative: 0.09
 	heightRelative: 1.00
 
-	enabled: !dataModel.controlDataStatic.sidebarsDisabled
-	visible: !dataModel.controlDataStatic.sidebarsDisabled
+//	enabled: !dataModel.controlDataStatic.sidebarsDisabled
+//	visible: !dataModel.controlDataStatic.sidebarsDisabled
 
 	Item {
 
@@ -67,7 +67,7 @@ ControlBar {
 			title: "FPS: " + fpsItem.fps
 			legend.visible: false
 			antialiasing: true
-			backgroundColor: leftSideBar.color
+			backgroundColor: controlBarLeft.color
 			titleColor: "white"
 
 			anchors.bottom: parent.bottom

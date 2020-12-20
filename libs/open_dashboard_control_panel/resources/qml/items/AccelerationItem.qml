@@ -1,3 +1,4 @@
+// Copyright (C) 2020 twyleg
 import QtQuick 2.0
 
 Item {
@@ -9,8 +10,16 @@ Item {
 	property real ax: 0
 	property real ay: 0
 
+	property bool active: mouseArea.containsMouse
+
 	onAxChanged: dotCanvas.requestPaint()
 	onAyChanged: dotCanvas.requestPaint()
+
+	Keys.onUpPressed: accelerationItem.ax += 0.1
+	Keys.onDownPressed: accelerationItem.ax -= 0.1
+
+	Keys.onLeftPressed: accelerationItem.ay += 0.1
+	Keys.onRightPressed: accelerationItem.ay -= 0.1
 
 	Canvas {
 		id: bullsEyeCanvas
@@ -95,7 +104,10 @@ Item {
 		}
 
 		MouseArea {
+			id: mouseArea
+
 			anchors.fill: parent
+			hoverEnabled: true
 			onPositionChanged: {
 
 				if (pressed) {
@@ -111,9 +123,5 @@ Item {
 		}
 	}
 
-	Keys.onUpPressed: accelerationItem.ax += 0.1
-	Keys.onDownPressed: accelerationItem.ax -= 0.1
 
-	Keys.onLeftPressed: accelerationItem.ay += 0.1
-	Keys.onRightPressed: accelerationItem.ay -= 0.1
 }

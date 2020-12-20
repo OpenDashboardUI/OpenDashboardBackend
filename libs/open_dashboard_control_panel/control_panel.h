@@ -1,8 +1,10 @@
 // Copyright (C) 2020 twyleg
 #pragma once
 
+#include "harddisk_player_controller.h"
+
 #include <open_dashboard_data_models/data_models.h>
-#include <open_dashboard_common/udp_transceiver.h>
+#include <open_dashboard_common_ui/connection_manager.h>
 
 #include <QWidget>
 #include <QObject>
@@ -30,9 +32,9 @@ public:
 	int Run();
 
 	QApplication mApplication;
-	OpenDashboard::Common::UdpTransmitter mUdpTransmitter;
-
 	DataModels::DataModel mDataModel;
+	CommonUI::ConnectionManager mConnectionManager;
+	HarddiskPlayerController mHarddiskPlayerController;
 
 };
 

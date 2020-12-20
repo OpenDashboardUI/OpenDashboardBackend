@@ -32,6 +32,8 @@ add_library(${TARGET_NAME}
 	xml_reader.h
 	harddisk_player.cc
 	harddisk_player.h
+	helper.cc
+	helper.h
 )
 
 

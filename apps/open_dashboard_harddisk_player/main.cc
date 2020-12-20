@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
 		udpTransmitter.Transmit(packet.GetData(), packet.GetSize());
 	}
 
-	const size_t framesToRead = harddiskPlayer.GetNumberOfFrames();
+	const size_t framesToRead = harddiskPlayer.GetFrameCount();
 	size_t currentFrame = 0;
 
 	std::function<void(const boost::system::error_code&)> run = [&](const boost::system::error_code&){

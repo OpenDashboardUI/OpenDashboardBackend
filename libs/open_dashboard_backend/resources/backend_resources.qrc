@@ -1,21 +1,23 @@
 <RCC>
-	<qresource prefix="/backend">
-		<file>qml/Application.qml</file>
-		<file>qml/FrontendLoader.qml</file>
+    <qresource prefix="/backend">
+        <file>qml/Application.qml</file>
+        <file>qml/FrontendLoader.qml</file>
         <file>qml/Svg.qml</file>
         <file>qml/LogoStartscreen.qml</file>
-		<file>qml/ControlBars/ControlBar.qml</file>
-		<file>qml/ControlBars/TopBar.qml</file>
-		<file>qml/ControlBars/TopBarItems/SquareButton.qml</file>
-		<file>qml/ControlBars/BottomBar.qml</file>
-		<file>qml/ControlBars/BottomBarItems/LogItem.qml</file>
-		<file>qml/ControlBars/LeftSideBar.qml</file>
-		<file>qml/ControlBars/LeftSideBarItems/FpsItem.qml</file>
-		<file>qml/ControlBars/RightSideBar.qml</file>
-		<file>qml/ControlBars/RightSideBarItems/MapView.qml</file>
-		<file>qml/ControlBars/RightSideBarItems/VideoChannel.qml</file>
-        <file>html/style.css</file>
-        <file>html/js/backend_connection.js</file>
-        <file>html/js/google_maps.js</file>
+        <file>qml/ControlBars/ControlBar.qml</file>
+        <file>qml/ControlBars/ControlBarTop.qml</file>
+        <file>qml/ControlBars/ControlBarTopItems/SquareButton.qml</file>
+        <file>qml/ControlBars/ControlBarTopItems/ControlBarSelector.qml</file>
+        <file>qml/ControlBars/ControlBarBottom.qml</file>
+        <file>qml/ControlBars/ControlBarBottomItems/LogItem.qml</file>
+        <file>qml/ControlBars/ControlBarLeft.qml</file>
+        <file>qml/ControlBars/ControlBarLeftItems/FpsItem.qml</file>
+        <file>qml/ControlBars/ControlBarRight.qml</file>
+        <file>qml/ControlBars/ControlBarRightItems/MapView.qml</file>
+        <file>qml/ControlBars/ControlBarRightItems/VideoChannel.qml</file>
+        <file>qml/SettingsWindow/EmbeddedWindow.qml</file>
+		<file>qml/SettingsWindow/SettingsWindow.qml</file>
+		<file>qml/SettingsWindow/ColorChooserItem.qml</file>
+		<file>qml/SettingsWindow/ApiKeyItem.qml</file>
     </qresource>
 </RCC>

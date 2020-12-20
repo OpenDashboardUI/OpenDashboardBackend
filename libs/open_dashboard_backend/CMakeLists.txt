@@ -13,8 +13,8 @@ set(CMAKE_AUTORCC ON)
 #
 # find packages
 #
-find_package(Qt5 COMPONENTS REQUIRED Core Widgets Qml Quick Location Charts)
-find_package(Qt5 COMPONENTS WebView QUIET)
+find_package(Qt5 COMPONENTS REQUIRED Core Widgets Qml Quick Location Charts QuickControls2)
+find_package(Qt5 COMPONENTS WebView WebEngine QUIET)
 find_package(Boost COMPONENTS REQUIRED program_options system)
 
 
@@ -23,19 +23,11 @@ find_package(Boost COMPONENTS REQUIRED program_options system)
 #
 extract_svg_layers(
 	INPUT_FILES
-	${CMAKE_CURRENT_SOURCE_DIR}/resources/svg-multilayer/sidebar_button.svg
-	${CMAKE_CURRENT_SOURCE_DIR}/resources/svg-multilayer/buttons.svg
+	${CMAKE_CURRENT_SOURCE_DIR}/resources/svg-multilayer/controlbar_button.svg
 	OUTPUT_DIR
-	${CMAKE_BINARY_DIR}/svg-multilayer-extracted/
-)
-
-generate_google_maps_html_file(
-	INPUT_FILE
-	${CMAKE_CURRENT_SOURCE_DIR}/resources/html/map.html_template
-	OUTPUT_FILE
-	${CMAKE_BINARY_DIR}/map.html
-	API_KEY
-	${GOOGLE_MAPS_API_KEY}
+	${CMAKE_BINARY_DIR}/backend-svg-multilayer-extracted/
+	QRC_FILENAME
+	backend_svg_multilayer_extracted.qrc
 )
 
 
@@ -46,9 +38,17 @@ if(Qt5WebEngine_DIR AND Qt5WebView_DIR)
 	message(STATUS "Webview and WebEngine available")
 	add_compile_definitions(OPEN_DASHBOARD_WEBVIEW_AVAILABLE=1)
 else()
-	message(STATUS "Webview or WebEngine not available")
+	message(STATUS "Webview (${Qt5WebView_DIR}) or WebEngine (${Qt5WebEngine_DIR}) not available")
+
 endif()
 
+if(USE_RELATIVE_QML_FILES)
+	message(STATUS "Using relative middleware QML files")
+	add_compile_definitions(USE_RELATIVE_QML_FILES=1)
+	add_compile_definitions(OPEN_DASHBOARD_SOURCE_DIR="${CMAKE_SOURCE_DIR}")
+else()
+	message(STATUS "Using QRC middleware QML files")
+endif()
 
 #
 # add source files to target
@@ -62,8 +62,7 @@ add_library(${TARGET_NAME}
 	cli_arguments.h
 
 	resources/backend_resources.qrc
-	${CMAKE_BINARY_DIR}/svg-multilayer-extracted/svg_multilayer_extracted.qrc
-	${CMAKE_BINARY_DIR}/map.qrc
+	${CMAKE_BINARY_DIR}/backend-svg-multilayer-extracted/backend_svg_multilayer_extracted.qrc
 )
 
 
@@ -82,6 +81,7 @@ target_link_libraries(${TARGET_NAME}
 	Qt::Location
 	Qt::Charts
 	Qt::WebView
+	Qt::QuickControls2
 	${Boost_LIBRARIES}
 #	stdc++fs
 )

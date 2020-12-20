@@ -5,9 +5,26 @@
 
 #include <open_dashboard.pb.h>
 
+#include <QQuickStyle>
+
 #include <iostream>
 
 namespace OpenDashboard::ControlPanel {
+
+namespace {
+
+QUrl GetFrontendMainFilePath()
+{
+#if defined(USE_RELATIVE_QML_FILES)
+	return QStringLiteral("file://"
+						  OPEN_DASHBOARD_SOURCE_DIR
+						  "/libs/open_dashboard_control_panel/resources/qml/ControlPanel.qml");
+#else
+	return QStringLiteral("qrc:/control_panel/qml/ControlPanel.qml");
+#endif
+}
+
+}
 
 #define CONNECT_HANDLER(qClass, qObj, qProperty, protoClass, protoProperty) \
 	connect(qObj, &qClass::qProperty##Changed, [qObj, this] { \
@@ -21,8 +38,10 @@ ControlPanel::ControlPanel(int argc, char* argv[], QObject* parent)
 	mArgc(argc),
 	mArgv(argv),
 	mApplication(mArgc, mArgv),
-	mUdpTransmitter("127.0.0.1", 50000)
+	mHarddiskPlayerController(mConnectionManager)
 {
+
+	QQuickStyle::setStyle("Material");
 }
 
 template<class T>
@@ -30,15 +49,21 @@ void ControlPanel::Send(const T& t)
 {
 	OpenDashboard::Common::OutboundPacket packet;
 	packet.AddMessage(t.msg_type(), t);
-	mUdpTransmitter.Transmit(packet.GetData(), packet.GetSize());
+	mConnectionManager.Transmit(packet.GetData(), packet.GetSize());
 }
 
 int ControlPanel::Run()
 {
+	mApplication.setOrganizationDomain("org.opendashboard");
+	mApplication.setOrganizationName("OpenDashboard");
+	mApplication.setApplicationName("OpenDashboardControlPanel");
+
 	QQmlApplicationEngine engine;
 	engine.addImportPath("qrc:/");
 	engine.rootContext()->setContextProperty("dataModel", &mDataModel);
-	engine.load(QUrl(QStringLiteral("qrc:/control_panel/qml/ControlPanel.qml")));
+	engine.rootContext()->setContextProperty("connectionManager", &mConnectionManager);
+	engine.rootContext()->setContextProperty("harddiskPlayerController", &mHarddiskPlayerController);
+	engine.load(GetFrontendMainFilePath());
 
 	DataModels::DriverInput* driverInput = mDataModel.GetVehicleData()->GetDriverInput();
 	CONNECT_HANDLER(DataModels::DriverInput, driverInput, Throttle, Proto::DriverInput, throttle);

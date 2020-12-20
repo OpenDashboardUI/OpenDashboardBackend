@@ -1,3 +1,4 @@
+// Copyright (C) 2020 twyleg
 #include "frontend_config.h"
 
 #include <open_dashboard_common/xml_reader.h>

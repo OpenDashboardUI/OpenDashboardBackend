@@ -5,6 +5,7 @@
 
 #include <open_dashboard_data_models/data_models.h>
 #include <open_dashboard_common/udp_transceiver.h>
+#include <open_dashboard_common_ui/map_generator.h>
 
 #include <QWidget>
 #include <QObject>
@@ -33,6 +34,7 @@ public:
 
 	CliArguments cliArguments;
 	OpenDashboard::DataModels::DataModel mDataModel;
+	CommonUI::MapGenerator mMapGenerator;
 
 	QApplication mApplication;
 	QQmlApplicationEngine mEngine;

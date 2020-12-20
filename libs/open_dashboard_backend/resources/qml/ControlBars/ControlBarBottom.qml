@@ -1,10 +1,10 @@
 // Copyright (C) 2020 twyleg
 import QtQuick 2.0
 
-import "./BottomBarItems"
+import "./ControlBarBottomItems"
 
 ControlBar {
-	id: bottombar
+	id: controlBarBottom
 
 	layout: ControlBar.Layout.BOTTOM
 

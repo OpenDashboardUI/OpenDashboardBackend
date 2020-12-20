@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 3.1.0)
 project(OpenDashboardBackend)
 
 include(cmake/win_deploy_qt.cmake)
-include(cmake/google_maps_key_template_engine.cmake)
 include(external/svg_layer_extractor/cmake/svg_layer_extractor.cmake)
 
 #

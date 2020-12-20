@@ -1,3 +1,4 @@
+// Copyright (C) 2020 twyleg
 import QtQuick 2.0
 import QtQuick.Controls 2.12
 
@@ -8,6 +9,8 @@ Item {
 	property double max: 360 * 2.5
 	property double tick: 1
 	property double angle: 0
+
+	property bool active: false
 
 	Image {
 		source: "qrc:/control_panel/images/external/steering_wheel.svg"
@@ -20,6 +23,8 @@ Item {
 		anchors.top: parent.top
 		anchors.bottom: slider.top
 		anchors.horizontalCenter: parent.horizontalCenter
+
+		width: parent.width
 	}
 
 	Slider {

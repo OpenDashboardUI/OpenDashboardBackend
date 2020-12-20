@@ -1,4 +1,9 @@
+// Copyright (C) 2020 twyleg
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include "harddisk_player.h"
+
 
 namespace OpenDashboard::Common {
 
@@ -16,6 +21,11 @@ void CarMakerFileParser::ReadFrame(size_t frameNumber)
 size_t CarMakerFileParser::GetNumberOfFrames()
 {
 	return mCsvReader.GetNumberOfLines();
+}
+
+double CarMakerFileParser::GetTimestamp()
+{
+	return mCsvReader.GetValue<double>("Time");
 }
 
 Proto::Dynamics CarMakerFileParser::GetDynamics()
@@ -77,9 +87,20 @@ void HarddiskPlayer::ReadFrame(size_t frameNumber)
 	mFileParser->ReadFrame(frameNumber);
 }
 
-size_t HarddiskPlayer::GetNumberOfFrames()
+size_t HarddiskPlayer::GetFrameCount()
 {
 	return mFileParser->GetNumberOfFrames();
+}
+
+double HarddiskPlayer::GetEndTimestamp()
+{
+	ReadFrame(GetFrameCount()-1);
+	return GetTimestamp();
+}
+
+double HarddiskPlayer::GetTimestamp()
+{
+	return mFileParser->GetTimestamp();
 }
 
 Proto::Dynamics HarddiskPlayer::GetDynamics()

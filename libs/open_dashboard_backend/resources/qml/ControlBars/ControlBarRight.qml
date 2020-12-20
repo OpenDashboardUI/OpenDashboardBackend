@@ -1,22 +1,21 @@
 // Copyright (C) 2020 twyleg
 import QtQuick 2.0
 
-import "./RightSideBarItems"
+import "./ControlBarRightItems"
 
 ControlBar {
-	id: rightSideBar
+	id: controlBarRight
 
 	layout: ControlBar.Layout.RIGHT
 	widthRelative: 0.15
 	heightRelative: 1.00
 
-	enabled: !dataModel.controlDataStatic.sidebarsDisabled
-	visible: !dataModel.controlDataStatic.sidebarsDisabled
-
 	Column {
 
-		width: parent.width * 0.9
-		height: parent.height * 0.9
+		id: rightSideBarColumn
+
+		width: parent.width - 10
+		height: parent.height - parent.radius*2
 		anchors.centerIn: parent
 		spacing: 20
 
@@ -71,15 +70,21 @@ ControlBar {
 			id: mapViewLoader
 
 			onLoaded: {
-				item.width = Qt.binding(function() { return rightSideBar.width });
-				item.height = Qt.binding(function() { return rightSideBar.width });
+				item.width = Qt.binding(function() { return rightSideBarColumn.width });
+				item.height = Qt.binding(function() { return rightSideBarColumn.width });
 			}
 
 			Component.onCompleted: {
 				if (dataModel.controlDataStatic.webViewAvailable) {
-					source = "qrc:/backend/qml/ControlBars/RightSideBarItems/MapView.qml"
+					source = "qrc:/backend/qml/ControlBars/ControlBarRightItems/MapView.qml"
 				}
 			}
+		}
+	}
+
+	function reload() {
+		if (dataModel.controlDataStatic.webViewAvailable) {
+			mapViewLoader.item.reload()
 		}
 	}
 }

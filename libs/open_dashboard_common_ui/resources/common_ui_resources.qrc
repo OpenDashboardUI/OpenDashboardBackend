@@ -2,5 +2,10 @@
 	<qresource prefix="/common_ui">
 		<file>images/svg/open_dashboard_logo_0.svg</file>
 		<file>images/svg/open_dashboard_logo_1.svg</file>
+
+		<file>html/map.html_template</file>
+		<file>html/style.css</file>
+		<file>html/js/backend_connection.js</file>
+		<file>html/js/google_maps.js</file>
 	</qresource>
 </RCC>

@@ -1,13 +1,14 @@
 // Copyright (C) 2020 twyleg
 import QtQuick 2.0
 import QtQuick.Controls 2.12
-import QtQuick.Layouts 1.15
+import QtQuick.Layouts 1.12
 
 Item {
 
 	id: customSlider
 
 	property alias name: label.text
+	property alias font: label.font
 	property double min: 0
 	property double max: 10
 	property double tick: 1
@@ -21,8 +22,9 @@ Item {
 
 		Label {
 			id: label
-			color: "white"
 
+			color: "white"
+			font.pointSize: 12
 			horizontalAlignment: "AlignHCenter"
 
 			Layout.fillWidth: true

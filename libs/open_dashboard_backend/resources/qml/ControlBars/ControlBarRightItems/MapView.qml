@@ -43,7 +43,11 @@ Item {
 		enabled: false
 
 		anchors.fill: parent
-		url: "qrc:/maps/map.html"
+		url: dataModel.controlDataStatic.mapFilePath
 		webChannel: channel
+	}
+
+	function reload() {
+		webview.reload()
 	}
 }

@@ -24,7 +24,10 @@ const std::string OPEN_DASHBOARD_XSD = R"(<?xml version="1.0"?>
 	  <xs:complexType name="DynamicDataType">
 		  <xs:sequence>
 			  <xs:element name="File" type="xs:string"/>
+			  <xs:element name="DataSource" type="xs:string"/>
+			  <xs:element name="Vehicle" type="xs:string"/>
 			  <xs:element name="SampleTime" type="xs:positiveInteger"/>
+			  <xs:element name="Comment" type="xs:string"/>
 		  </xs:sequence>
 	  </xs:complexType>
 
@@ -140,8 +143,18 @@ Config Config::ReadConfig(const std::filesystem::path& filePath)
 	const auto absoluteDynamicDataPath = GetAbsoluteSubconfigPath(configFileBaseDir, dynamicDataPath);
 	CheckFileExistence(absoluteDynamicDataPath);
 	config.mDynamicData.mFile = absoluteDynamicDataPath;
+
+	config.mDynamicData.mDataSource = XmlReader::GetContent<std::string>(
+				XmlReader::GetFirstChildElement(dynamicDataElem, "DataSource"));
+
+	config.mDynamicData.mVehicle = XmlReader::GetContent<std::string>(
+				XmlReader::GetFirstChildElement(dynamicDataElem, "Vehicle"));
+
 	config.mDynamicData.mSampleTime = std::chrono::milliseconds(XmlReader::GetContent<int>(
 			XmlReader::GetFirstChildElement(dynamicDataElem, "SampleTime")));
+
+	config.mDynamicData.mComment = XmlReader::GetContent<std::string>(
+				XmlReader::GetFirstChildElement(dynamicDataElem, "Comment"));
 
 
 	const auto videoDataElem = XmlReader::GetFirstChildElement(openDashboardElem, "VideoData");

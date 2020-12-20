@@ -123,11 +123,16 @@ class ControlDataStatic: public SerializableQObject
 	Q_OBJECT
 
 	ADD_PROPERTY(bool, sidebarsDisabled, SidebarsDisabled, true);
+	ADD_PROPERTY(bool, controlBarLeftEnabled, ControlBarLeftEnabled, true);
+	ADD_PROPERTY(bool, controlBarRightEnabled, ControlBarRightEnabled, true);
+	ADD_PROPERTY(bool, controlBarBottomEnabled, ControlBarBottomEnabled, true);
 	ADD_PROPERTY(bool, webViewAvailable, WebViewAvailable, true);
 
 	ADD_PROPERTY(QUrl, videoChannelOnePath, VideoChannelOnePath, QUrl());
 	ADD_PROPERTY(QUrl, videoChannelTwoPath, VideoChannelTwoPath, QUrl());
 	ADD_PROPERTY(QUrl, videoChannelThreePath, VideoChannelThreePath, QUrl());
+
+	ADD_PROPERTY(QUrl, mapFilePath, MapFilePath, QUrl());
 
 public:
 

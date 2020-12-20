@@ -8,6 +8,7 @@
 int main(int argc, char *argv[])
 {
 	Q_INIT_RESOURCE(common_ui_resources);
+	Q_INIT_RESOURCE(common_ui_svg_multilayer_extracted);
 	Q_INIT_RESOURCE(control_panel_resources);
 
 	std::cout << "Started" << std::endl;

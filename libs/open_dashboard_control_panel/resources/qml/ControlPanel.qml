@@ -3,15 +3,25 @@ import QtQuick 2.12
 import QtQuick.Window 2.12
 
 import QtQuick.Controls 2.12
+import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
 import QtQuick.Controls.Material 2.12
 import QtQuick.Extras 1.4
 import QtQuick.Layouts 1.15
 
+import QtQml.Models 2.2
+
 import "./items"
+import "./views"
 
 ApplicationWindow {
 	id: controlPanelWindow
+
+	property real backgroundOpacity: 0.8
+
+	Material.theme: Material.Dark
+	Material.accent: Material.White
+	Material.foreground: Material.White
 
 	title: qsTr("OpenDashboard - ControlPanel")
 	visible: true
@@ -19,203 +29,169 @@ ApplicationWindow {
 	minimumHeight: 800
 	minimumWidth: 800
 
-	onWidthChanged: adjustBackground()
-	onHeightChanged: adjustBackground()
-	Component.onCompleted: adjustBackground()
-
-	property real contentOpacity: 0.8
-
-	Image {
+	BackgroundImage {
 		id: backgroundImage
-
-		source: "qrc:/control_panel/images/external/background_1.jpg"
-
-		fillMode: Image.PreserveAspectFit
-
-		anchors.bottom: parent.bottom
-		anchors.right: parent.right
 	}
 
-	Item {
+	HeaderItem {
 		id: headerItem
 
 		anchors.top: parent.top
 		anchors.left: parent.left
 		anchors.right: parent.right
-
 		height: Screen.height * 0.05
 
-		Rectangle {
-			id: headerItemBackground
-			anchors.fill: parent
+		backgroundOpactity: backgroundOpacity
 
-			color: "black"
-			opacity: contentOpacity
-		}
-
-		Image {
-			source: "qrc:/common_ui/images/svg/open_dashboard_logo_1.svg"
-
-			anchors.centerIn: parent
-			height: parent.height
-			fillMode: Image.PreserveAspectFit
-
-			sourceSize.width: width
-			sourceSize.height: height
-		}
+		onBurgerMenuButtonClicked: customDrawer.open()
 	}
 
 	Item {
-		id: contentItem
+		id: centralItem
 
 		anchors.top: headerItem.bottom
 		anchors.left: parent.left
 		anchors.right: parent.right
 		anchors.bottom: footerItem.top
+		anchors.topMargin: 20
+		anchors.bottomMargin: 20
 
-		Rectangle {
+		NavigationItem {
+			id: navigationItemLeft
 
-			anchors.horizontalCenter: parent.horizontalCenter
+			direction: NavigationItem.Direction.LEFT
+			backgroundOpacity: controlPanelWindow.backgroundOpacity
+
+			width: parent.width * 0.025
 			anchors.top: parent.top
-			anchors.topMargin: 20
+			anchors.left: parent.left
+			anchors.bottom: parent.bottom
 
-			width: parent.width * 0.9
-			height: parent.height * 0.7
+			onClicked: contentItem.moveLeft()
+		}
 
-			color: "black"
-			opacity: contentOpacity
+		NavigationItem {
+			id: navigationItemRight
 
-			radius: 10
+			direction: NavigationItem.Direction.RIGHT
+			backgroundOpacity: controlPanelWindow.backgroundOpacity
 
-			ColumnLayout {
+			width: parent.width * 0.025
+			anchors.top: parent.top
+			anchors.right: parent.right
+			anchors.bottom: parent.bottom
 
-				anchors.top: parent.top
-				anchors.horizontalCenter: parent.horizontalCenter
-				width: parent.width * 0.95
+			onClicked: contentItem.moveRight()
+		}
 
-				spacing: 1
+		SplitView {
+			id: contentItemSplitView
 
-				Text {
-					text: "Dynamics"
-					color: "white"
-					horizontalAlignment: Qt.AlignHCenter
-					Layout.preferredWidth: parent.width
+			orientation: Qt.Vertical
+
+			anchors.top: parent.top
+			anchors.left: navigationItemLeft.right
+			anchors.right: navigationItemRight.left
+			anchors.bottom: parent.bottom
+
+			handleDelegate: Rectangle {
+				color: "transparent"
+				height: 20
+
+				Rectangle {
+					color: "black"
+					width: parent.width
+					height: 3
+					anchors.centerIn: parent
+				}
+			}
+
+			ContentItem {
+				id: contentItem
+
+				Layout.fillWidth: true
+				Layout.fillHeight: true
+				Layout.minimumHeight: parent.height * 0.15
+
+				backgroundOpactity: backgroundOpacity
+
+				Component.onCompleted: initView(0)
+
+				items: [
+					connectionViewComponent.createObject(),
+					quantitiesViewComponent.createObject(),
+					harddiskPlayerViewComponent.createObject(),
+				]
+
+				Component {
+					id: connectionViewComponent
+					ConnectionView {}
 				}
 
-				CustomSlider {
-					name: "Velocity"
-					Layout.preferredWidth: parent.width
-					Layout.preferredHeight: 40
-
-					min: 0
-					max: 400
-					tick: 1.0
-
-					onValueChanged: dataModel.vehicleData.dynamics.velocity = value
+				Component {
+					id: quantitiesViewComponent
+					QuantitiesView {}
 				}
 
-				Text {
-					text: "Powertrain"
-					color: "white"
-					horizontalAlignment: Qt.AlignHCenter
-					Layout.preferredWidth: parent.width
+				Component {
+					id: harddiskPlayerViewComponent
+					HarddiskPlayerView {}
 				}
+			}
 
-				CustomSlider {
-					name: "RPM"
-					Layout.preferredWidth: parent.width
-					Layout.preferredHeight: 40
+			LogItem {
+				id: logItem
 
-					min: 0
-					max: 10000
-					tick: 10
+				Layout.fillWidth: true
+				Layout.minimumHeight: parent.height * 0.15
 
-					onValueChanged: dataModel.vehicleData.powertrain.engineRotation = value
-				}
-
-				CustomSlider {
-					name: "Gear"
-					Layout.preferredWidth: parent.width
-					Layout.preferredHeight: 40
-
-					min: -1
-					max: 7
-					tick: 1.0
-
-					onValueChanged: dataModel.vehicleData.powertrain.gearboxGear = value
-				}
-
-				RowLayout {
-					id: rowLayout
-
-					Layout.preferredWidth: parent.width
-					Layout.preferredHeight: 400
-
-					AccelerationItem {
-						id: accelerationItem
-
-						Layout.preferredWidth: parent.width/3
-						Layout.preferredHeight: 250
-
-						onAxChanged: dataModel.vehicleData.dynamics.ax = ax * 9.81
-						onAyChanged: dataModel.vehicleData.dynamics.ay = ay * 9.81
-					}
-
-					PedalsItem {
-						id: pedalsItem
-
-						Layout.preferredWidth: parent.width/3
-						Layout.preferredHeight: 250
-
-						onThrottleChanged: dataModel.vehicleData.driverInput.throttle = throttle
-						onBrakeChanged: dataModel.vehicleData.driverInput.brake = brake
-						onClutchChanged: dataModel.vehicleData.driverInput.clutch = clutch
-					}
-
-					SteeringWheelItem {
-						id: steeringWheelItem
-
-						Layout.preferredWidth: parent.width/3
-						Layout.preferredHeight: 250
-
-						onAngleChanged: dataModel.vehicleData.driverInput.steeringWheelAngle = angle
-					}
-				}
+				backgroundOpactity: backgroundOpacity
 			}
 		}
 	}
 
-	Item {
+	FooterItem {
 		id: footerItem
 
 		anchors.left: parent.left
 		anchors.right: parent.right
 		anchors.bottom: parent.bottom
-
 		height: Screen.height * 0.025
 
-		Rectangle {
-			id: footerItemBackground
+		backgroundOpactity: backgroundOpacity
+
+		Text {
+			id: footerText
+			text: "Tx: total = " + connectionManager.transmitCount + " B, current = " + (connectionManager.transmitBps / 1000).toPrecision(3) + " kb/s"
+			color: "white"
+			font.pointSize: 10
+			verticalAlignment: Qt.AlignVCenter
 			anchors.fill: parent
-
-			color: "black"
-			opacity: contentOpacity
-		}
-
-	}
-
-	function adjustBackground() {
-
-		var windowRatio = width / height
-		var backgroundRatio = backgroundImage.sourceSize.width / backgroundImage.sourceSize.height
-
-		if (windowRatio > backgroundRatio) {
-			backgroundImage.width = controlPanelWindow.width
-			backgroundImage.height = controlPanelWindow.width / backgroundRatio
-		} else {
-			backgroundImage.width = controlPanelWindow.height * backgroundRatio
-			backgroundImage.height = controlPanelWindow.height
 		}
 	}
 
+	CustomDrawer {
+		id: customDrawer
+
+		width: parent.width/4
+		height: parent.height
+
+		model: ObjectModel {
+
+			CustomDrawerElement {
+				text: "Connection"
+				onClicked: contentItem.changeView(0)
+			}
+
+			CustomDrawerElement {
+				text: "Quantities Control"
+				onClicked: contentItem.changeView(1)
+			}
+
+			CustomDrawerElement {
+				text: "Harddisk Player"
+				onClicked: contentItem.changeView(2)
+			}
+		}
+	}
 }

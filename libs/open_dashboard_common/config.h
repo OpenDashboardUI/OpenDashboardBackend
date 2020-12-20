@@ -21,7 +21,10 @@ struct Config {
 	struct DynamicData
 	{
 		std::filesystem::path mFile;
+		std::string mDataSource;
+		std::string mVehicle;
 		std::chrono::milliseconds mSampleTime;
+		std::string mComment;
 	};
 
 	TrackInformation mTrackInformation;

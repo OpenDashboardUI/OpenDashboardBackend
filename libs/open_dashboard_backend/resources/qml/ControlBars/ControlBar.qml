@@ -1,10 +1,10 @@
 // Copyright (C) 2020 twyleg
 import QtQuick 2.0
+import Qt.labs.settings 1.0
 
 import "../"
 
 Rectangle {
-
 	id: controlBar
 
 	enum Layout {
@@ -114,49 +114,37 @@ Rectangle {
 		z: -1
 
 		Component.onCompleted: {
+			var size = Math.max(parent.height, parent.width) * 0.05
+			width = Qt.binding(function() { return size})
+			height = Qt.binding(function() { return size })
+
 			if (layout === ControlBar.Layout.LEFT) {
 				anchors.left = parent.right
 				anchors.verticalCenter = parent.verticalCenter
-
-				width = Qt.binding(function() { return parent.height * 0.05 })
-				height = Qt.binding(function() { return width })
-
 				rotation = 0
 			} else if (layout === ControlBar.Layout.RIGHT) {
 				anchors.right = parent.left
 				anchors.verticalCenter = parent.verticalCenter
-
-				width = Qt.binding(function() { return parent.height * 0.05 })
-				height = Qt.binding(function() { return width })
-
 				rotation = 180
 			} else if (layout === ControlBar.Layout.TOP) {
 				anchors.top = parent.bottom
 				anchors.horizontalCenter = parent.horizontalCenter
-
-				height = Qt.binding(function() { return parent.width * 0.05 })
-				width = Qt.binding(function() { return height })
-
 				rotation = 90
 			} else {
 				anchors.bottom = parent.top
 				anchors.horizontalCenter = parent.horizontalCenter
-
-				height = Qt.binding(function() { return parent.width * 0.05 })
-				width = Qt.binding(function() { return height })
-
 				rotation = 270
 			}
 		}
 
 		Svg {
-			source: "qrc:/svg-multilayer-extracted/sidebar_button_background.svg"
+			source: "qrc:/svg-multilayer-extracted/controlbar_button_background.svg"
 		}
 
 		Svg {
 			id: icon
 
-			source: "qrc:/svg-multilayer-extracted/sidebar_button_icon.svg"
+			source: "qrc:/svg-multilayer-extracted/controlbar_button_icon.svg"
 
 			transform: Rotation {
 				origin.x: icon.width * 0.25
@@ -174,7 +162,7 @@ Rectangle {
 		}
 
 		Svg {
-			source: "qrc:/svg-multilayer-extracted/sidebar_button_halo.svg"
+			source: "qrc:/svg-multilayer-extracted/controlbar_button_halo.svg"
 
 			transformOrigin: Item.Left
 			SequentialAnimation on rotation {
