@@ -1,0 +1,30 @@
+<RCC>
+    <qresource prefix="/control_panel">
+		<file>images/external/background_0.jpg</file>
+		<file>images/external/background_1.jpg</file>
+		<file>images/external/steering_wheel.svg</file>
+        <file>qml/ControlPanel.qml</file>
+        <file>qml/items/CustomSlider.qml</file>
+        <file>qml/items/AccelerationItem.qml</file>
+        <file>qml/items/PedalsItem.qml</file>
+        <file>qml/items/PedalProgressBar.qml</file>
+		<file>qml/items/SteeringWheelItem.qml</file>
+		<file>qml/items/CustomDrawer.qml</file>
+		<file>qml/items/CustomDrawerElement.qml</file>
+		<file>qml/items/BackgroundImage.qml</file>
+		<file>qml/items/ContentItem.qml</file>
+		<file>qml/items/FooterItem.qml</file>
+		<file>qml/items/HeaderItem.qml</file>
+		<file>qml/items/HorizontallyScrollableTextEdit.qml</file>
+		<file>qml/items/LogItem.qml</file>
+		<file>qml/items/NavigationItem.qml</file>
+		<file>qml/views/QuantitiesView.qml</file>
+		<file>qml/views/ConnectionView.qml</file>
+		<file>qml/views/HarddiskPlayerView.qml</file>
+		<file>qml/views/HarddiskPlayerItems/FileLoader.qml</file>
+		<file>qml/views/HarddiskPlayerItems/PlayerControl.qml</file>
+		<file>qml/views/HarddiskPlayerItems/PlayerSlider.qml</file>
+		<file>qml/views/HarddiskPlayerItems/RecordDetails.qml</file>
+		<file>qml/views/HarddiskPlayerItems/VideoItem.qml</file>
+    </qresource>
+</RCC>

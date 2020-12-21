@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>embedded map</title>
+		<meta name="viewport" content="initial-scale=1.0">
+		<meta charset="utf-8">
+		<link rel="stylesheet" type="text/css" href="qrc:/common_ui/html/style.css">
+		<script type="text/javascript" src="qrc:///qtwebchannel/qwebchannel.js"></script>
+		<script type="text/javascript" src="qrc:/common_ui/html/js/backend_connection.js"></script>
+		<script type="text/javascript" src="qrc:/common_ui/html/js/google_maps.js"></script>
+		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=${api_key}&callback=initMap" async defer></script>
+	</head>
+	<body>
+		<div id="map"></div>
+	</body>
+</html>
